@@ -4,6 +4,8 @@ use Behat\Behat\Context\Context;
 use Behat\Behat\Context\Environment\InitializedContextEnvironment;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Gherkin\Node\PyStringNode;
+use Behat\MinkExtension\Context\MinkContext;
+use PHPUnit\Framework\Assert;
 
 class HttpContext implements Context
 {
@@ -13,10 +15,8 @@ class HttpContext implements Context
     private $groupsAndUsersContext;
     /** @var JsonContext */
     private $jsonContext;
-
-    public function __construct()
-    {
-    }
+    /** @var MinkContext */
+    private $minkContext;
 
     /** @BeforeScenario */
     public function gatherContexts(BeforeScenarioScope $scope)
@@ -30,6 +30,7 @@ class HttpContext implements Context
         $this->restContext = $environment->getContext(RestContext::class);
         $this->groupsAndUsersContext = $environment->getContext(GroupsAndUsersContext::class);
         $this->jsonContext = $environment->getContext(JsonContext::class);
+        $this->minkContext = $environment->getContext(MinkContext::class);
     }
 
     /** @When API-user sends :method request to :url */
@@ -47,5 +48,13 @@ class HttpContext implements Context
         $this->restContext->theResponseShouldNotBeEmpty();
         $this->restContext->theResponseShouldBeInJson();
         $this->jsonContext->theJsonNodeShouldBeEqualToValue('data', ['id' => $group->getId()]);
+    }
+
+    /** @Then response should be standard JSON-success */
+    public function responseShouldBeStandardJsonSuccess()
+    {
+        $this->restContext->theResponseShouldNotBeEmpty();
+        Assert::assertContains($this->minkContext->getSession()->getStatusCode(), [200, 201]);
+        $this->restContext->theResponseShouldBeInJson();
     }
 }

@@ -14,6 +14,15 @@ class GroupsAndUsersContext implements Context
         $this->em = $em;
     }
 
+    /** @BeforeScenario */
+    public function beforeScenario()
+    {
+        foreach ($this->em->getRepository(Group::class)->findAll() as $group) {
+            $this->em->remove($group);
+        }
+        $this->em->flush();
+    }
+
     public function readGroupByName(string $groupName): ?Group
     {
         return $this->em->getRepository(Group::class)->findOneBy(['name' => $groupName]);
