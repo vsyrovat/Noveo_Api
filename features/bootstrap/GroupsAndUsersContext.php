@@ -19,14 +19,23 @@ class GroupsAndUsersContext implements Context
         return $this->em->getRepository(Group::class)->findOneBy(['name' => $groupName]);
     }
 
-    /**
-     * @Given group :groupName does not exists
-     */
+    /** @Given group :groupName does not exists */
     function groupDoesNotExists(string $groupName)
     {
         $group = $this->readGroupByName($groupName);
         if ($group) {
             $this->em->remove($group);
+            $this->em->flush();
+        }
+    }
+
+    /** @Given group :groupName exists */
+    function groupExists(string $groupName)
+    {
+        $group = $this->readGroupByName($groupName);
+        if (!$group) {
+            $group = new Group($groupName);
+            $this->em->persist($group);
             $this->em->flush();
         }
     }

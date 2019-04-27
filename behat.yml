@@ -9,6 +9,7 @@ default:
         - RestContext
         - HttpContext
         - \Behat\MinkExtension\Context\MinkContext
+        - JsonContext
 
   extensions:
     Behat\Symfony2Extension:

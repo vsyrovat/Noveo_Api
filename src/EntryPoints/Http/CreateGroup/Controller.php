@@ -2,20 +2,21 @@
 
 namespace App\EntryPoints\Http\CreateGroup;
 
-use App\Domain\Entity\Group;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Domain\Command\Group\CreateGroup;
+use App\Domain\Command\Group\DuplicateGroupNameException;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\View\View;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class Controller extends AbstractFOSRestController
 {
-    private $em;
+    private $createGroup;
 
-    public function __construct(EntityManagerInterface $em)
+    public function __construct(CreateGroup $createGroup)
     {
-        $this->em = $em;
+        $this->createGroup = $createGroup;
     }
 
     /**
@@ -24,10 +25,11 @@ class Controller extends AbstractFOSRestController
     public function action(Request $request)
     {
         $name = $request->request->get('name');
-        $group = new Group($name);
-        $this->em->persist($group);
-        $this->em->flush();
-
-        return View::create(['id' => $group->getId()], 201);
+        try {
+            $group = $this->createGroup->execute($name);
+            return View::create(['success' => true, 'data' => ['id' => $group->getId()], 'msg' => ''], Response::HTTP_CREATED);
+        } catch (DuplicateGroupNameException $e) {
+            return View::create(['success' => false, 'data' => [], 'msg' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        }
     }
 }

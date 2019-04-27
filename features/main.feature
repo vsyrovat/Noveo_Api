@@ -11,4 +11,14 @@ Feature: groups and users management
     {"name":"Spaceship operators"}
     """
     Then group "Spaceship operators" should exists
+    And the JSON node "success" should be true
     And response body should be equal to id of group "Spaceship operators"
+
+  Scenario: error create group with same name
+    Given group "Monkey moneymakers" exists
+    When API-user sends POST request to "/groups/"
+    """
+    {"name": "Monkey moneymakers"}
+    """
+    Then the response status code should be 400
+    And the JSON node "success" should be false

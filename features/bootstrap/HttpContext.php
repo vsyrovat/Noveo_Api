@@ -11,6 +11,8 @@ class HttpContext implements Context
     private $restContext;
     /** @var GroupsAndUsersContext */
     private $groupsAndUsersContext;
+    /** @var JsonContext */
+    private $jsonContext;
 
     public function __construct()
     {
@@ -27,6 +29,7 @@ class HttpContext implements Context
 
         $this->restContext = $environment->getContext(RestContext::class);
         $this->groupsAndUsersContext = $environment->getContext(GroupsAndUsersContext::class);
+        $this->jsonContext = $environment->getContext(JsonContext::class);
     }
 
     /** @When API-user sends :method request to :url */
@@ -43,7 +46,6 @@ class HttpContext implements Context
         $group = $this->groupsAndUsersContext->readGroupByName($groupName);
         $this->restContext->theResponseShouldNotBeEmpty();
         $this->restContext->theResponseShouldBeInJson();
-        $this->restContext->theResponseDataShouldBeEqualTo(['id' => $group->getId()]);
-
+        $this->jsonContext->theJsonNodeShouldBeEqualToValue('data', ['id' => $group->getId()]);
     }
 }
