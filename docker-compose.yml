@@ -1,0 +1,18 @@
+version: "3.7"
+
+services:
+  db:
+    image: postgres:11.2-alpine
+    container_name: php-napi-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: napi
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - ./var/pgdata:/var/lib/postgresql/data/pgdata
+      - /etc/passwd:/etc/passwd:ro
+    ports:
+      - 55437:5432
+    restart: 'no'
+    user: 1000:1000
