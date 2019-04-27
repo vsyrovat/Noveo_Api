@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace App\Domain\Queries\Group;
+namespace App\Domain\Query;
 
 use App\Domain\Entity\Group;
 use Doctrine\ORM\EntityManagerInterface;
 
-class GetGroupList
+class GetGroups
 {
     private $em;
 

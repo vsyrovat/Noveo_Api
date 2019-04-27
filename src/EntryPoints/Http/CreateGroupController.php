@@ -1,16 +1,16 @@
 <?php declare(strict_types=1);
 
-namespace App\EntryPoints\Http\CreateGroup;
+namespace App\EntryPoints\Http;
 
-use App\Domain\Command\Group\CreateGroup;
-use App\Domain\Command\Group\DuplicateGroupNameException;
+use App\Domain\Command\CreateGroup;
+use App\Domain\Exception\DuplicateGroupNameException;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\View\View;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class Controller extends AbstractFOSRestController
+class CreateGroupController extends AbstractFOSRestController
 {
     private $createGroup;
 

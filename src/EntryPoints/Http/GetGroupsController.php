@@ -1,17 +1,17 @@
 <?php declare(strict_types=1);
 
-namespace App\EntryPoints\Http\ListGroups;
+namespace App\EntryPoints\Http;
 
-use App\Domain\Queries\Group\GetGroupList;
+use App\Domain\Query\GetGroups;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\View\View;
 
-class Controller extends AbstractFOSRestController
+class GetGroupsController extends AbstractFOSRestController
 {
     private $getGroupList;
 
-    public function __construct(GetGroupList $getGroupList)
+    public function __construct(GetGroups $getGroupList)
     {
         $this->getGroupList = $getGroupList;
     }
