@@ -31,3 +31,14 @@ Feature: groups and users management
     And the JSON node "success" should be true
     And the JSON node "data[0].name" should be equal to "Captains"
     And the JSON node "data[1].name" should be equal to "Pirates"
+
+  @captureGroupId
+  Scenario: update group info
+    Given group "Admins" exists
+    When API-user sends PUT request to update mentioned group
+    """
+    {"name":"Guests"}
+    """
+    Then the response status code should be 200
+    And the JSON node "success" should be true
+    Then mentioned group should be named as "Guests"
