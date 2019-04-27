@@ -42,3 +42,14 @@ Feature: groups and users management
     Then the response status code should be 200
     And the JSON node "success" should be true
     Then mentioned group should be named as "Guests"
+
+  @captureCreateUser
+  Scenario: Create User
+    Given group "Innovators" exists
+    When API-user sends POST request to "/users/"
+    """
+    {"firstName":"Elon", "lastName": "Musk", "email": "ElonMuskOffice@TeslaMotors.com", "isActive":true, "groupId": {$1}}
+    """
+    Then user "Elon Musk" should be created
+    And the response status code should be 201
+    And response should contain created user id

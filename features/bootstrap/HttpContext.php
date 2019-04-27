@@ -11,12 +11,21 @@ class HttpContext implements Context
 {
     /** @var RestContext */
     private $restContext;
-    /** @var GroupsAndUsersContext */
-    private $groupsAndUsersContext;
+    /** @var GroupContext */
+    private $groupsContext;
     /** @var JsonContext */
     private $jsonContext;
     /** @var MinkContext */
     private $minkContext;
+
+    private function substituteParameter(PyStringNode $node, string $sign, $value)
+    {
+        $strings = [];
+        foreach ($node->getStrings() as $string) {
+            $strings[] = str_replace($sign, $value, $string);
+        }
+        return new PyStringNode($strings, $node->getLine());
+    }
 
     /** @BeforeScenario */
     public function gatherContexts(BeforeScenarioScope $scope)
@@ -28,7 +37,7 @@ class HttpContext implements Context
         }
 
         $this->restContext = $environment->getContext(RestContext::class);
-        $this->groupsAndUsersContext = $environment->getContext(GroupsAndUsersContext::class);
+        $this->groupsContext = $environment->getContext(GroupContext::class);
         $this->jsonContext = $environment->getContext(JsonContext::class);
         $this->minkContext = $environment->getContext(MinkContext::class);
     }
@@ -36,6 +45,9 @@ class HttpContext implements Context
     /** @When API-user sends :method request to :url */
     public function apiUserSendsRequest(string $method, string $url, PyStringNode $body = null, $files = [])
     {
+        if ($body) {
+            $body = $this->substituteParameter($body, '{$1}', $this->groupsContext->getCapturedGroupId());
+        }
         $this->restContext->iAddHeaderEqualTo('Content-Type', 'application/json');
         $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
         $this->restContext->iSendARequestTo($method, $url, $body, $files);
@@ -44,7 +56,7 @@ class HttpContext implements Context
     /** @Then response body should be equal to id of group :groupName */
     public function responseShouldBeEqualToGroupId(string $groupName)
     {
-        $group = $this->groupsAndUsersContext->readGroupByName($groupName);
+        $group = $this->groupsContext->readGroupByName($groupName);
         $this->restContext->theResponseShouldNotBeEmpty();
         $this->restContext->theResponseShouldBeInJson();
         $this->jsonContext->theJsonNodeShouldBeEqualToValue('data', ['id' => $group->getId()]);

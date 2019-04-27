@@ -4,7 +4,9 @@ default:
       contexts:
         - FeatureContext:
             kernel: '@kernel'
-        - GroupsAndUsersContext:
+        - GroupContext:
+            em: '@doctrine.orm.entity_manager'
+        - UserContext:
             em: '@doctrine.orm.entity_manager'
         - RestContext
         - HttpContext

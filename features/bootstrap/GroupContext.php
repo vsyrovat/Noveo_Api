@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 
 use App\Domain\Entity\Group;
+use App\Domain\Entity\User;
 use Behat\Behat\Context\Context;
 use Behat\Behat\Context\Environment\InitializedContextEnvironment;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
@@ -8,7 +9,7 @@ use Behat\Gherkin\Node\PyStringNode;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Assert;
 
-class GroupsAndUsersContext implements Context
+class GroupContext implements Context
 {
     private $em;
     private $captureGroup = false;
@@ -21,10 +22,18 @@ class GroupsAndUsersContext implements Context
         $this->em = $em;
     }
 
+    public function getCapturedGroupId()
+    {
+        return $this->capturedGroupId;
+    }
+
     /** @BeforeScenario */
     public function beforeScenario()
     {
         foreach ($this->em->getRepository(Group::class)->findAll() as $group) {
+            foreach ($this->em->getRepository(User::class)->findBy(['group' => $group]) as $user) {
+                $this->em->remove($user);
+            }
             $this->em->remove($group);
         }
         $this->em->flush();

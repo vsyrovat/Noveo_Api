@@ -10,3 +10,16 @@ Content-Type: application/json
 GET http://localhost:8000/groups/
 
 ###
+
+POST http://localhost:8000/users/
+Content-Type: application/json
+
+{
+  "firstName": "Elon",
+  "lastName": "Musk",
+  "email": "ElonMuskOffice@TeslaMotors.com",
+  "isActive": true,
+  "groupId": 1
+}
+
+###
