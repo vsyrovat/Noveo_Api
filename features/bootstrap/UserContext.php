@@ -20,7 +20,7 @@ class UserContext implements Context
     /** @var JsonContext */
     private $jsonContext;
     private $beforeScanarioUsers;
-    private $entities;
+    private $store;
 
     public function __construct(EntityManagerInterface $em)
     {
@@ -47,7 +47,7 @@ class UserContext implements Context
         $this->em->persist($browne);
         $this->em->flush();
 
-        $this->entities = ['writers' => $writers, 'anderson' => $anderson, 'browne' => $browne];
+        $this->store = ['writers' => $writers, 'anderson' => $anderson, 'browne' => $browne];
     }
 
     /** @Given there is a user */
@@ -60,7 +60,7 @@ class UserContext implements Context
         $this->em->persist($user1);
 
         $this->em->flush();
-        $this->entities = ['group1' => $group1, 'user1' => $user1];
+        $this->store = ['group1' => $group1, 'user1' => $user1];
     }
 
     /** @When I get a list of all users */
@@ -74,7 +74,7 @@ class UserContext implements Context
     public function whenIGetAUser()
     {
         $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
-        $this->restContext->iSendARequestTo('GET', sprintf('/users/%d/', $this->entities['user1']->getId()));
+        $this->restContext->iSendARequestTo('GET', sprintf('/users/%d/', $this->store['user1']->getId()));
     }
 
     /** @When I create a user */
@@ -85,7 +85,7 @@ class UserContext implements Context
         $group = new Group('Chuck Norris');
         $this->em->persist($group);
         $this->em->flush();
-        $this->entities['group1'] = $group;
+        $this->store['group1'] = $group;
 
         $this->restContext->iAddHeaderEqualTo('Content-Type', 'application/json');
         $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
@@ -117,7 +117,7 @@ JSON;
 }
 JSON;
         $body = new PyStringNode([$body], 0);
-        $this->restContext->iSendARequestTo('PUT', sprintf('/users/%d/', $this->entities['user1']->getId()), $body);
+        $this->restContext->iSendARequestTo('PUT', sprintf('/users/%d/', $this->store['user1']->getId()), $body);
     }
 
     /** @Then I see a list of all users */
@@ -187,9 +187,9 @@ JSON;
 }
 JSON;
         $pySchema = new PyStringNode([$schema], 0);
-        $pySchema = HttpContext::substituteParameter($pySchema, '{writers.id}', $this->entities['writers']->getId());
-        $pySchema = HttpContext::substituteParameter($pySchema, '{anderson.id}', $this->entities['anderson']->getId());
-        $pySchema = HttpContext::substituteParameter($pySchema, '{browne.id}', $this->entities['browne']->getId());
+        $pySchema = HttpContext::substituteParameter($pySchema, '{writers.id}', $this->store['writers']->getId());
+        $pySchema = HttpContext::substituteParameter($pySchema, '{anderson.id}', $this->store['anderson']->getId());
+        $pySchema = HttpContext::substituteParameter($pySchema, '{browne.id}', $this->store['browne']->getId());
         $this->jsonContext->theJsonShouldBeValidAccordingToThisSchema($pySchema);
     }
 
@@ -236,8 +236,8 @@ JSON;
 }
 JSON;
         $pySchema = new PyStringNode([$schema], 0);
-        $pySchema = HttpContext::substituteParameter($pySchema, '{group1.id}', $this->entities['group1']->getId());
-        $pySchema = HttpContext::substituteParameter($pySchema, '{user1.id}', $this->entities['user1']->getId());
+        $pySchema = HttpContext::substituteParameter($pySchema, '{group1.id}', $this->store['group1']->getId());
+        $pySchema = HttpContext::substituteParameter($pySchema, '{user1.id}', $this->store['user1']->getId());
         $this->jsonContext->theJsonShouldBeValidAccordingToThisSchema($pySchema);
     }
 
@@ -249,7 +249,7 @@ JSON;
         $this->restContext->theHeaderShouldBeEqualTo('Content-Type', 'application/json');
 
         /** @var User $user */
-        $user = $this->em->getRepository(User::class)->find($this->entities['user1']->getId());
+        $user = $this->em->getRepository(User::class)->find($this->store['user1']->getId());
         Assert::assertSame('Mary', $user->firstName);
         Assert::assertSame('Adams', $user->lastName);
         Assert::assertSame('mary.adams@company.com', $user->email);
@@ -267,7 +267,7 @@ JSON;
             }
         ));
         Assert::assertCount(1, $diff, 'User was not been created');
-        $this->entities['user1'] = $diff[0];
+        $this->store['user1'] = $diff[0];
     }
 
     /** @Then I see the user */
@@ -278,7 +278,7 @@ JSON;
         $this->jsonContext->theResponseShouldBeInJson();
 
         /** @var User $user */
-        $user = $this->em->getRepository(User::class)->find($this->entities['user1']->getId());
+        $user = $this->em->getRepository(User::class)->find($this->store['user1']->getId());
         Assert::assertSame('Chuck', $user->firstName);
         Assert::assertSame('Norris', $user->lastName);
         Assert::assertSame('chuck@norris.chucknorris', $user->email);
