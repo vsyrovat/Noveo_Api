@@ -172,4 +172,72 @@ JSON;
         $pySchema = HttpContext::substituteParameter($pySchema, '{browne.id}', $this->entities['browne']->getId());
         $this->jsonContext->theJsonShouldBeValidAccordingToThisSchema($pySchema);
     }
+
+    /** @Given there is a user */
+    public function givenThereIsAUser()
+    {
+        $group1 = new Group('Technical support');
+        $this->em->persist($group1);
+
+        $user1 = new User('John', 'Smith', 'john.smith@company.com', true, $group1);
+        $this->em->persist($user1);
+
+        $this->em->flush();
+        $this->entities = ['group1' => $group1, 'user1' => $user1];
+    }
+
+    /** @When I get a user */
+    public function whenIGetAUser()
+    {
+        $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
+        $this->restContext->iSendARequestTo('GET', sprintf('/users/%d/', $this->entities['user1']->getId()));
+    }
+
+    /** @Then I see a user */
+    public function thenISeeAUser()
+    {
+        $this->minkContext->assertResponseStatus(200);
+        $this->jsonContext->theResponseShouldBeInJson();
+        $this->restContext->theHeaderShouldBeEqualTo('Content-Type', 'application/json');
+        $schema = /** @lang JSON */ <<<'JSON'
+{
+  "definitions": {
+    "group": {
+      "type": "object",
+      "required": ["id", "name"]
+    },
+    "user": {
+      "type": "object",
+      "required": ["id", "group", "first_name", "last_name", "email", "is_active"]
+    }
+  },
+
+  "type": "object",
+  "properties": {
+    "success": {"type": "boolean"},
+    "data": {
+      "$ref": "#/definitions/user",
+      "properties": {
+        "id": {"enum": [{user1.id}]},
+        "first_name": {"pattern": "^John$"},
+        "last_name": {"pattern": "^Smith$"},
+        "email": {"pattern": "^john.smith@company.com$"},
+        "is_active": {"enum": [true]},
+        "group": {
+          "$ref": "#/definitions/group",
+          "properties": {
+            "id": {"enum": [{group1.id}]},
+            "name": {"pattern": "^Technical support$"}
+          }
+        }
+      }
+    }
+  }
+}
+JSON;
+        $pySchema = new PyStringNode([$schema], 0);
+        $pySchema = HttpContext::substituteParameter($pySchema, '{group1.id}', $this->entities['group1']->getId());
+        $pySchema = HttpContext::substituteParameter($pySchema, '{user1.id}', $this->entities['user1']->getId());
+        $this->jsonContext->theJsonShouldBeValidAccordingToThisSchema($pySchema);
+    }
 }

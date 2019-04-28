@@ -58,3 +58,8 @@ Feature: groups and users management
     Given there is a users in a group
     When I get a list of all users
     Then I see a list of all users
+
+  Scenario: Fetch info of a user
+    Given there is a user
+    When I get a user
+    Then I see a user
