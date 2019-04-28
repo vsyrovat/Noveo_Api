@@ -12,8 +12,6 @@ use PHPUnit\Framework\Assert;
 class GroupContext implements Context
 {
     private $em;
-    private $captureGroup = false;
-    private $capturedGroupId;
     /** @var HttpContext */
     private $httpContext;
     /** @var RestContext */
@@ -30,11 +28,6 @@ class GroupContext implements Context
         $this->em = $em;
     }
 
-    public function getCapturedGroupId()
-    {
-        return $this->capturedGroupId;
-    }
-
     /** @BeforeScenario */
     public function gatherContexts(BeforeScenarioScope $scope)
     {
@@ -44,58 +37,27 @@ class GroupContext implements Context
         $this->jsonContext = $scope->getEnvironment()->getContext(JsonContext::class);
     }
 
-    /** @beforeScenario @captureGroupId */
-    public function captureGroupId()
+    /** @Given there is a group */
+    public function givenThereIsAGroup()
     {
-        $this->captureGroup = true;
+        $group = new Group('Stargate moderators');
+        $this->em->persist($group);
+        $this->em->flush();
+        $this->store['group1'] = $group;
     }
 
-    public function readGroupByName(string $groupName): ?Group
+    /** @Given there is a groups */
+    public function givenThereIsAGroups()
     {
-        return $this->em->getRepository(Group::class)->findOneBy(['name' => $groupName]);
-    }
+        $group1 = new Group('Admins');
+        $this->em->persist($group1);
+        $this->store['group1'] = $group1;
 
-    /** @Given group :groupName does not exists */
-    function groupDoesNotExists(string $groupName)
-    {
-        $group = $this->readGroupByName($groupName);
-        if ($group) {
-            $this->em->remove($group);
-            $this->em->flush();
-        }
-    }
+        $group2 = new Group('Users');
+        $this->em->persist($group2);
+        $this->store['group2'] = $group2;
 
-    /** @Given group :groupName exists */
-    function groupExists(string $groupName)
-    {
-        $group = $this->readGroupByName($groupName);
-        if (!$group) {
-            $group = new Group($groupName);
-            $this->em->persist($group);
-            $this->em->flush();
-        }
-        $this->capturedGroupId = $group->getId();
-    }
-
-    /** @Then group :groupName should exists */
-    public function groupShouldExists(string $groupName)
-    {
-        $group = $this->readGroupByName($groupName);
-        Assert::assertNotNull($group, "Group $groupName is not exist");
-    }
-
-    /** @Then group with id :groupId should be named as :groupName */
-    public function groupWithIdShouldBeNamedAs(int $groupId, string $groupName)
-    {
-        $group = $this->em->getRepository(Group::class)->find($groupId);
-        Assert::assertSame($groupName, $group);
-    }
-
-    /** @Then mentioned group should be named as :groupName */
-    public function mentionedGroupShouldBeNamedAs(string $groupName)
-    {
-        $group = $this->em->getRepository(Group::class)->find($this->capturedGroupId);
-        Assert::assertSame($groupName, $group->getName());
+        $this->em->flush();
     }
 
     /** @When I create a group */
@@ -113,6 +75,42 @@ class GroupContext implements Context
 JSON
         ], 0);
         $this->restContext->iSendARequestToWithBody('POST', '/groups/', $body);
+    }
+
+    /** @When I create group with same name */
+    public function whenICreateGroupWithSameName()
+    {
+        $this->restContext->iAddHeaderEqualTo('Content-Type', 'application/json');
+        $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
+
+        $body = new PyStringNode([/** @lang JSON */ <<<'JSON'
+{
+    "name": "Stargate moderators"
+}
+JSON
+        ], 0);
+        $this->restContext->iSendARequestToWithBody('POST', '/groups/', $body);
+    }
+
+    /** @When I get a list of groups */
+    public function whenIGetAListOfGroups()
+    {
+        $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
+        $this->restContext->iSendARequestTo('GET', '/groups/');
+    }
+
+    /** @When I update group info */
+    public function whenIUpdateGroupInfo()
+    {
+        $this->restContext->iAddHeaderEqualTo('Content-Type', 'application/json');
+        $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
+        $body = /** @lang JSON */ <<<'JSON'
+{
+  "name": "Gangsters"
+}
+JSON;
+        $body = new PyStringNode([$body], 0);
+        $this->restContext->iSendARequestTo('PUT', sprintf('/groups/%d/', $this->store['group1']->getId()), $body);
     }
 
     /** @Then a group was created */
@@ -162,55 +160,10 @@ JSON;
         $this->jsonContext->theJsonShouldBeValidAccordingToThisSchema($schema);
     }
 
-    /** @Given there is a group */
-    public function givenThereIsAGroup()
-    {
-        $group = new Group('Stargate moderators');
-        $this->em->persist($group);
-        $this->em->flush();
-        $this->store['group1'] = $group;
-    }
-
-    /** @When I create group with same name */
-    public function whenICreateGroupWithSameName()
-    {
-        $this->restContext->iAddHeaderEqualTo('Content-Type', 'application/json');
-        $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
-
-        $body = new PyStringNode([/** @lang JSON */ <<<'JSON'
-{
-    "name": "Stargate moderators"
-}
-JSON
-        ], 0);
-        $this->restContext->iSendARequestToWithBody('POST', '/groups/', $body);
-    }
-
     /** @Then request is invalid */
     public function thenRequestIsInvalid()
     {
         $this->minkContext->assertResponseStatus(400);
-    }
-
-    /** @Given there is a groups */
-    public function givenThereIsAGroups()
-    {
-        $group1 = new Group('Admins');
-        $this->em->persist($group1);
-        $this->store['group1'] = $group1;
-
-        $group2 = new Group('Users');
-        $this->em->persist($group2);
-        $this->store['group2'] = $group2;
-
-        $this->em->flush();
-    }
-
-    /** @When I get a list of groups */
-    public function whenIGetAListOfGroups()
-    {
-        $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
-        $this->restContext->iSendARequestTo('GET', '/groups/');
     }
 
     /** @Then I see a list of groups */
@@ -261,20 +214,6 @@ JSON;
         $schema = HttpContext::substituteParameter($schema, '{group1.id}', $this->store['group1']->getId());
         $schema = HttpContext::substituteParameter($schema, '{group2.id}', $this->store['group2']->getId());
         $this->jsonContext->theJsonShouldBeValidAccordingToThisSchema($schema);
-    }
-
-    /** @When I update group info */
-    public function whenIUpdateGroupInfo()
-    {
-        $this->restContext->iAddHeaderEqualTo('Content-Type', 'application/json');
-        $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
-        $body = /** @lang JSON */ <<<'JSON'
-{
-  "name": "Gangsters"
-}
-JSON;
-        $body = new PyStringNode([$body], 0);
-        $this->restContext->iSendARequestTo('PUT', sprintf('/groups/%d/', $this->store['group1']->getId()), $body);
     }
 
     /** @Then group info was updated */
