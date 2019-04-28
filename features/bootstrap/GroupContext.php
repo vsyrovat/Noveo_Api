@@ -267,4 +267,30 @@ JSON;
         $schema = HttpContext::substituteParameter($schema, '{group2.id}', $this->store['group2']->getId());
         $this->jsonContext->theJsonShouldBeValidAccordingToThisSchema($schema);
     }
+
+    /** @When I update group info */
+    public function whenIUpdateGroupInfo()
+    {
+        $this->restContext->iAddHeaderEqualTo('Content-Type', 'application/json');
+        $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
+        $body = /** @lang JSON */ <<<'JSON'
+{
+  "name": "Gangsters"
+}
+JSON;
+        $body = new PyStringNode([$body], 0);
+        $this->restContext->iSendARequestTo('PUT', sprintf('/groups/%d/', $this->store['group1']->getId()), $body);
+    }
+
+    /** @Then group info was updated */
+    public function thenGroupInfoWasUpdated()
+    {
+        $this->minkContext->assertResponseStatus(200);
+        $this->jsonContext->theResponseShouldBeInJson();
+        $this->restContext->theHeaderShouldBeEqualTo('Content-Type', 'application/json');
+
+        /** @var Group $group */
+        $group = $this->em->getRepository(Group::class)->find($this->store['group1']->getId());
+        Assert::assertSame('Gangsters', $group->getName());
+    }
 }

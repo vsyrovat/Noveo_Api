@@ -19,16 +19,10 @@ Feature: groups and users management
     When I get a list of groups
     Then I see a list of groups
 
-  @captureGroupId
-  Scenario: update group info
-    Given group "Admins" exists
-    When API-user sends PUT request to update mentioned group
-    """
-    {"name":"Guests"}
-    """
-    Then the response status code should be 200
-    And the JSON node "success" should be true
-    Then mentioned group should be named as "Guests"
+  Scenario: Update group info
+    Given there is a group
+    When I update group info
+    Then group info was updated
 
   @captureCreateUser
   Scenario: Create User

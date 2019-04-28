@@ -246,7 +246,7 @@ JSON;
     {
         $this->restContext->iAddHeaderEqualTo('Content-Type', 'application/json');
         $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
-        $json = /** @lang JSON */ <<<'JSON'
+        $body = /** @lang JSON */ <<<'JSON'
 {
   "firstName": "Mary",
   "lastName": "Adams",
@@ -254,8 +254,7 @@ JSON;
   "isActive": false
 }
 JSON;
-        $pyNode = new PyStringNode([$json], 0);
-        $body = HttpContext::substituteParameter($pyNode, '{group1.id}', $this->entities['group1']->getId());
+        $body = new PyStringNode([$body], 0);
         $this->restContext->iSendARequestTo('PUT', sprintf('/users/%d/', $this->entities['user1']->getId()), $body);
     }
 
