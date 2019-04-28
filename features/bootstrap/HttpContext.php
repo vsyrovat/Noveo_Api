@@ -18,7 +18,7 @@ class HttpContext implements Context
     /** @var MinkContext */
     private $minkContext;
 
-    private function substituteParameter(PyStringNode $node, string $sign, $value)
+    public static function substituteParameter(PyStringNode $node, string $sign, $value)
     {
         $strings = [];
         foreach ($node->getStrings() as $string) {
@@ -46,7 +46,7 @@ class HttpContext implements Context
     public function apiUserSendsRequest(string $method, string $url, PyStringNode $body = null, $files = [])
     {
         if ($body) {
-            $body = $this->substituteParameter($body, '{$1}', $this->groupsContext->getCapturedGroupId());
+            $body = self::substituteParameter($body, '{$1}', $this->groupsContext->getCapturedGroupId());
         }
         $this->restContext->iAddHeaderEqualTo('Content-Type', 'application/json');
         $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');

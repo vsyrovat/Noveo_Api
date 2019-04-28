@@ -5,6 +5,8 @@ fos_rest:
 #    routing_loader: true
     view:
         view_response_listener:  true
+#        mime_types:
+#            json: ['application/json; charset=utf-8', 'application/json']
 #    exception:
 #        codes:
 #            App\Exception\MyException: 403

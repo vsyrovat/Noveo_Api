@@ -1,20 +1,25 @@
 <?php declare(strict_types=1);
 
+use App\Domain\Entity\Group;
 use App\Domain\Entity\User;
 use Behat\Behat\Context\Context;
-use Behat\Behat\Context\Environment\InitializedContextEnvironment;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
+use Behat\Gherkin\Node\PyStringNode;
+use Behat\MinkExtension\Context\MinkContext;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Assert;
 
 class UserContext implements Context
 {
     private $em;
+    /** @var MinkContext */
+    private $minkContext;
     /** @var RestContext */
     private $restContext;
     /** @var JsonContext */
     private $jsonContext;
     private $beforeScanarioUsers;
+    private $entities;
 
     public function __construct(EntityManagerInterface $em)
     {
@@ -39,14 +44,9 @@ class UserContext implements Context
     /** @BeforeScenario */
     public function gatherContexts(BeforeScenarioScope $scope)
     {
-        $environment = $scope->getEnvironment();
-
-        if (!$environment instanceof InitializedContextEnvironment) {
-            throw new \LogicException('FeatureContext cannot be correctly initialized without access to subcontexts.');
-        }
-
-        $this->restContext = $environment->getContext(RestContext::class);
-        $this->jsonContext = $environment->getContext(JsonContext::class);
+        $this->minkContext = $scope->getEnvironment()->getContext(MinkContext::class);
+        $this->restContext = $scope->getEnvironment()->getContext(RestContext::class);
+        $this->jsonContext = $scope->getEnvironment()->getContext(JsonContext::class);
     }
 
     /** @BeforeScenario @captureCreateUser */
@@ -76,5 +76,100 @@ class UserContext implements Context
         $this->restContext->theResponseShouldNotBeEmpty();
         $this->restContext->theResponseShouldBeInJson();
         $this->jsonContext->theJsonNodeShouldBeEqualToValue('data', ['id' => $user->getId()]);
+    }
+
+    /** @Given there is a users in a group */
+    public function thereIsAUsersInAGroup()
+    {
+        $writers = new Group('Writers');
+        $anderson = new User('Victor', 'Anderson', 'victor@anderson.org', true, $writers);
+        $browne = new User('Thomas', 'Browne', 'thomas@browne.org', false, $writers);
+
+        $this->em->persist($writers);
+        $this->em->persist($anderson);
+        $this->em->persist($browne);
+        $this->em->flush();
+
+        $this->entities = ['writers' => $writers, 'anderson' => $anderson, 'browne' => $browne];
+    }
+
+    /** @When I get a list of all users */
+    public function iGetAListOfAllUsers()
+    {
+        $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
+        $this->restContext->iSendARequestTo('GET', '/users/');
+    }
+
+    /** @Then I see a list of all users */
+    public function iSeeAListOfAllUsers()
+    {
+        $this->minkContext->assertResponseStatus(200);
+        $this->jsonContext->theResponseShouldBeInJson();
+        $this->restContext->theHeaderShouldBeEqualTo('Content-Type', 'application/json');
+        $schema = /** @lang JSON */ <<<'JSON'
+{
+  "definitions": {
+    "group": {
+      "type": "object",
+      "required": ["id", "name"]
+    },
+    "user": {
+      "type": "object",
+      "required": ["id", "group", "first_name", "last_name", "email", "is_active"]
+    }
+  },
+
+  "type": "object",
+  "properties": {
+    "success": {"type": "boolean"},
+    "data": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": [
+        {
+          "$ref": "#/definitions/user",
+          "properties": {
+            "id": {"enum": [{anderson.id}]},
+            "first_name": {"pattern": "^Victor$"},
+            "last_name": {"pattern": "^Anderson$"},
+            "email": {"pattern": "^victor@anderson.org$"},
+            "is_active": {"enum": [true]},
+            "group": {
+              "$ref": "#/definitions/group",
+              "properties": {
+                "id": {"enum": [{writers.id}]},
+                "name": {"pattern": "^Writers$"}
+              }
+            }
+          }
+        },
+        {
+          "$ref": "#/definitions/user",
+          "properties": {
+            "id": {"enum": [{browne.id}]},
+            "first_name": {"pattern": "^Thomas"},
+            "last_name": {"pattern": "^Browne$"},
+            "email": {"pattern": "^thomas@browne.org$"},
+            "is_active": {"enum": [false]},
+            "group": {
+              "$ref": "#/definitions/group",
+              "properties": {
+                "id": {"type": "integer", "enum": [{writers.id}]},
+                "name": {"pattern": "^Writers$"}
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+JSON;
+        $pySchema = new PyStringNode([$schema], 0);
+        $pySchema = HttpContext::substituteParameter($pySchema, '{writers.id}', $this->entities['writers']->getId());
+        $pySchema = HttpContext::substituteParameter($pySchema, '{anderson.id}', $this->entities['anderson']->getId());
+        $pySchema = HttpContext::substituteParameter($pySchema, '{browne.id}', $this->entities['browne']->getId());
+        $this->jsonContext->theJsonShouldBeValidAccordingToThisSchema($pySchema);
     }
 }

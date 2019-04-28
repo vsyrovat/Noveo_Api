@@ -53,3 +53,8 @@ Feature: groups and users management
     Then user "Elon Musk" should be created
     And the response status code should be 201
     And response should contain created user id
+
+  Scenario: Fetch list of users
+    Given there is a users in a group
+    When I get a list of all users
+    Then I see a list of all users
