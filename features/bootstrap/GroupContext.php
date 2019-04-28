@@ -196,4 +196,75 @@ JSON
     {
         $this->minkContext->assertResponseStatus(400);
     }
+
+    /** @Given there is a groups */
+    public function givenThereIsAGroups()
+    {
+        $group1 = new Group('Admins');
+        $this->em->persist($group1);
+        $this->store['group1'] = $group1;
+
+        $group2 = new Group('Users');
+        $this->em->persist($group2);
+        $this->store['group2'] = $group2;
+
+        $this->em->flush();
+    }
+
+    /** @When I get a list of groups */
+    public function whenIGetAListOfGroups()
+    {
+        $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
+        $this->restContext->iSendARequestTo('GET', '/groups/');
+    }
+
+    /** @Then I see a list of groups */
+    public function thenISeeAListOfGroups()
+    {
+        $this->minkContext->assertResponseStatus(200);
+        $this->restContext->theHeaderShouldBeEqualTo('Content-Type', 'application/json');
+        $this->jsonContext->theResponseShouldBeInJson();
+
+        $schema = /** @lang JSON */ <<<'JSON'
+{
+  "definitions": {
+    "group": {
+      "type": "object",
+      "required": ["id", "name"]
+    }
+  },
+
+  "type": "object",
+  "required": ["success", "data"],
+  "properties": {
+    "success": {"enum": [true]},
+    "data": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": [
+        {
+          "$ref": "#/definitions/group",
+          "properties": {
+            "id": {"enum": [{group1.id}]},
+            "name": {"pattern": "^Admins$"}
+          }
+        },
+        {
+          "$ref": "#/definitions/group",
+          "properties": {
+            "id": {"enum": [{group2.id}]},
+            "name": {"pattern": "^Users$"}
+          }
+        }
+      ]
+    }
+  }
+}
+JSON;
+        $schema = new PyStringNode([$schema], 0);
+        $schema = HttpContext::substituteParameter($schema, '{group1.id}', $this->store['group1']->getId());
+        $schema = HttpContext::substituteParameter($schema, '{group2.id}', $this->store['group2']->getId());
+        $this->jsonContext->theJsonShouldBeValidAccordingToThisSchema($schema);
+    }
 }

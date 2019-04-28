@@ -14,14 +14,10 @@ Feature: groups and users management
     When I create group with same name
     Then request is invalid
 
-  Scenario: get list of the groups
-    Given group "Captains" exists
-    And group "Pirates" exists
-    When API-user sends GET request to "/groups/"
-    Then response should be standard JSON-success
-    And the JSON node "success" should be true
-    And the JSON node "data[0].name" should be equal to "Captains"
-    And the JSON node "data[1].name" should be equal to "Pirates"
+  Scenario: Get list of the groups
+    Given there is a groups
+    When I get a list of groups
+    Then I see a list of groups
 
   @captureGroupId
   Scenario: update group info
