@@ -1,6 +1,7 @@
 <?php
 
 use Behat\Behat\Context\Context;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
@@ -23,9 +24,28 @@ class FeatureContext implements Context
      */
     private $response;
 
-    public function __construct(KernelInterface $kernel)
+    private $em;
+
+    public function __construct(KernelInterface $kernel, EntityManagerInterface $em)
     {
         $this->kernel = $kernel;
+        $this->em = $em;
+    }
+
+    /**
+     * @BeforeScenario
+     */
+    public function createTransaction()
+    {
+        $this->em->beginTransaction();
+    }
+
+    /**
+     * @AfterScenario
+     */
+    public function rollbackTransaction()
+    {
+        $this->em->rollback();
     }
 
     /**

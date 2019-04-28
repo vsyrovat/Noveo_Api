@@ -1,0 +1,15 @@
+services:
+
+  # Define test Client with disabled Kernel Reboot option.
+  # Need to dynamically configure environment in Behat @BeforeScenario hook (between start of Scenario and start of HTTP Request).
+  # Without this config Behat's Symfony2Extension reload Kernel between start of Scenario (Example) and Http call,
+  # and thus reset state of Kernel's services.
+  # Based on vendor/symfony/framework-bundle/Resources/config/test.xml
+  test.client:
+    class: Symfony\Bundle\FrameworkBundle\Client
+    shared: false
+    public: true
+    arguments: ['@kernel', '%test.client.parameters%', '@test.client.history', '@test.client.cookiejar', 'test.service_container']
+    calls: [{method: disableReboot}] # this option added
+    autowire: false
+    autoconfigure: false

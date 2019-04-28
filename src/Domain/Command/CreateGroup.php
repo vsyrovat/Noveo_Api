@@ -21,13 +21,12 @@ class CreateGroup
     public function execute(string $groupName): Group
     {
         $this->em->beginTransaction();
-
-        $existsGroup = $this->em->getRepository(Group::class)->findOneBy(['name' => $groupName]);
-        if ($existsGroup !== null) {
-            throw new DuplicateGroupNameException($groupName);
-        }
-
         try {
+            $existsGroup = $this->em->getRepository(Group::class)->findOneBy(['name' => $groupName]);
+            if ($existsGroup !== null) {
+                throw new DuplicateGroupNameException($groupName);
+            }
+
             $group = new Group($groupName);
             $this->em->persist($group);
             $this->em->flush();

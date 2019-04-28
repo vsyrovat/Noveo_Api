@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 
 use App\Domain\Entity\Group;
-use App\Domain\Entity\User;
 use Behat\Behat\Context\Context;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Gherkin\Node\PyStringNode;
@@ -33,18 +32,6 @@ class GroupContext implements Context
     public function getCapturedGroupId()
     {
         return $this->capturedGroupId;
-    }
-
-    /** @BeforeScenario */
-    public function beforeScenario()
-    {
-        foreach ($this->em->getRepository(Group::class)->findAll() as $group) {
-            foreach ($this->em->getRepository(User::class)->findBy(['group' => $group]) as $user) {
-                $this->em->remove($user);
-            }
-            $this->em->remove($group);
-        }
-        $this->em->flush();
     }
 
     /** @BeforeScenario */
@@ -119,7 +106,7 @@ class GroupContext implements Context
     /** @When I create a group */
     public function whenICreateAGroup()
     {
-        $this->beforeScanarioGroups = $this->em->getRepository(User::class)->findAll();
+        $this->beforeScanarioGroups = $this->em->getRepository(Group::class)->findAll();
 
         $this->restContext->iAddHeaderEqualTo('Content-Type', 'application/json');
         $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
@@ -136,15 +123,16 @@ JSON
     /** @Then a group was created */
     public function thenAGroupWasCreated()
     {
-        $diff = array_udiff(
+        $diff = array_values(array_udiff(
             $this->em->getRepository(Group::class)->findAll(),
             $this->beforeScanarioGroups,
             static function (Group $a, Group $b) {
                 return $a->getId() <=> $b->getId();
             }
-        );
+        ));
 
         Assert::assertCount(1, $diff, 'A group was not created');
+        Assert::assertNotCount(2, $diff, 'Unexpected shit happens');
         Assert::assertSame('Spaceship operators', $diff[0]->getName());
 
         $this->store = ['group1' => $diff[0]];

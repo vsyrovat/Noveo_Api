@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 
 use Behat\Behat\Context\Context;
-use Behat\Behat\Context\Environment\InitializedContextEnvironment;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Gherkin\Node\PyStringNode;
 use Behat\MinkExtension\Context\MinkContext;
@@ -30,16 +29,10 @@ class HttpContext implements Context
     /** @BeforeScenario */
     public function gatherContexts(BeforeScenarioScope $scope)
     {
-        $environment = $scope->getEnvironment();
-
-        if (!$environment instanceof InitializedContextEnvironment) {
-            throw new \LogicException('FeatureContext cannot be correctly initialized without access to subcontexts.');
-        }
-
-        $this->restContext = $environment->getContext(RestContext::class);
-        $this->groupsContext = $environment->getContext(GroupContext::class);
-        $this->jsonContext = $environment->getContext(JsonContext::class);
-        $this->minkContext = $environment->getContext(MinkContext::class);
+        $this->restContext = $scope->getEnvironment()->getContext(RestContext::class);
+        $this->groupsContext = $scope->getEnvironment()->getContext(GroupContext::class);
+        $this->jsonContext = $scope->getEnvironment()->getContext(JsonContext::class);
+        $this->minkContext = $scope->getEnvironment()->getContext(MinkContext::class);
     }
 
     /** @When API-user sends :method request to :url */
