@@ -4,19 +4,15 @@ Feature: groups and users management
   - I want to check if this user exits and is active
   - I want to modify the list of users of a group
 
-  Scenario: create a group
+  Scenario: Create a group
     When I create a group
     Then a group was created
     And I see a group
 
-  Scenario: error create group with same name
-    Given group "Monkey moneymakers" exists
-    When API-user sends POST request to "/groups/"
-    """
-    {"name": "Monkey moneymakers"}
-    """
-    Then the response status code should be 400
-    And the JSON node "success" should be false
+  Scenario: Throw error on create group with same name
+    Given there is a group
+    When I create group with same name
+    Then request is invalid
 
   Scenario: get list of the groups
     Given group "Captains" exists

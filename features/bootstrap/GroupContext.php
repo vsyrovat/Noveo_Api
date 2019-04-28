@@ -178,4 +178,34 @@ JSON;
         $schema = HttpContext::substituteParameter($schema, '{group1.id}', $this->store['group1']->getId());
         $this->jsonContext->theJsonShouldBeValidAccordingToThisSchema($schema);
     }
+
+    /** @Given there is a group */
+    public function givenThereIsAGroup()
+    {
+        $group = new Group('Stargate moderators');
+        $this->em->persist($group);
+        $this->em->flush();
+        $this->store['group1'] = $group;
+    }
+
+    /** @When I create group with same name */
+    public function whenICreateGroupWithSameName()
+    {
+        $this->restContext->iAddHeaderEqualTo('Content-Type', 'application/json');
+        $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
+
+        $body = new PyStringNode([/** @lang JSON */ <<<'JSON'
+{
+    "name": "Stargate moderators"
+}
+JSON
+        ], 0);
+        $this->restContext->iSendARequestToWithBody('POST', '/groups/', $body);
+    }
+
+    /** @Then request is invalid */
+    public function thenRequestIsInvalid()
+    {
+        $this->minkContext->assertResponseStatus(400);
+    }
 }
