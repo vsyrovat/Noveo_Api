@@ -24,16 +24,11 @@ Feature: groups and users management
     When I update group info
     Then group info was updated
 
-  @captureCreateUser
+
   Scenario: Create User
-    Given group "Innovators" exists
-    When API-user sends POST request to "/users/"
-    """
-    {"firstName":"Elon", "lastName": "Musk", "email": "ElonMuskOffice@TeslaMotors.com", "isActive":true, "groupId": {$1}}
-    """
-    Then user "Elon Musk" should be created
-    And the response status code should be 201
-    And response should contain created user id
+    When I create a user
+    Then the user was created
+    And I see the user
 
   Scenario: Fetch list of users
     Given there is a users in a group

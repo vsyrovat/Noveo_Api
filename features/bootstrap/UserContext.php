@@ -26,21 +26,6 @@ class UserContext implements Context
         $this->em = $em;
     }
 
-    private function compareCurrentDbUsersWith(array $beforeUsers)
-    {
-        $users = $this->em->getRepository(User::class)->findAll();
-
-        $diff = array_udiff(
-            $users,
-            $beforeUsers,
-            static function (User $a, User $b) {
-                return $a->getId() <=> $b->getId();
-            }
-        );
-
-        return $diff;
-    }
-
     /** @BeforeScenario */
     public function gatherContexts(BeforeScenarioScope $scope)
     {
@@ -53,29 +38,6 @@ class UserContext implements Context
     public function beforeCreateUserHook(BeforeScenarioScope $scope)
     {
         $this->beforeScanarioUsers = $this->em->getRepository(User::class)->findAll();
-    }
-
-    public function getCreatedUser()
-    {
-        $diff = $this->compareCurrentDbUsersWith($this->beforeScanarioUsers);
-        Assert::assertCount(1, $diff, 'User was not been created');
-        return $diff[0];
-    }
-
-    /** @Then user :fullName should be created */
-    public function userShouldBeCreated(string $fullName)
-    {
-        $user = $this->getCreatedUser();
-        Assert::assertSame($fullName, "{$user->firstName} {$user->lastName}");
-    }
-
-    /** @Then response should contain created user id */
-    public function responseShouldContainUserId()
-    {
-        $user = $this->getCreatedUser();
-        $this->restContext->theResponseShouldNotBeEmpty();
-        $this->restContext->theResponseShouldBeInJson();
-        $this->jsonContext->theJsonNodeShouldBeEqualToValue('data', ['id' => $user->getId()]);
     }
 
     /** @Given there is a users in a group */
@@ -271,5 +233,60 @@ JSON;
         Assert::assertSame('Adams', $user->lastName);
         Assert::assertSame('mary.adams@company.com', $user->email);
         Assert::assertFalse($user->isActive);
+    }
+
+    /** @When I create a user */
+    public function whenICreateAUser()
+    {
+        $this->beforeScanarioUsers = $this->em->getRepository(User::class)->findAll();
+
+        $group = new Group('Chuck Norris');
+        $this->em->persist($group);
+        $this->em->flush();
+        $this->entities['group1'] = $group;
+
+        $this->restContext->iAddHeaderEqualTo('Content-Type', 'application/json');
+        $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
+        $body = /** @lang JSON */ <<<'JSON'
+{
+  "firstName": "Chuck",
+  "lastName": "Norris",
+  "email": "chuck@norris.chucknorris",
+  "isActive": true,
+  "groupId": {group1.id}
+}
+JSON;
+        $body = new PyStringNode([$body], 0);
+        $body = HttpContext::substituteParameter($body, '{group1.id}', $group->getId());
+        $this->restContext->iSendARequestTo('POST', '/users/', $body);
+    }
+
+    /** @Then the user was created */
+    public function thenTheUserWasCreated()
+    {
+        $diff = array_values(array_udiff(
+            $this->em->getRepository(User::class)->findAll(),
+            $this->beforeScanarioUsers,
+            static function (User $a, User $b) {
+                return $a->getId() <=> $b->getId();
+            }
+        ));
+        Assert::assertCount(1, $diff, 'User was not been created');
+        $this->entities['user1'] = $diff[0];
+    }
+
+    /** @Then I see the user */
+    public function thenISeeTheUser()
+    {
+        $this->minkContext->assertResponseStatus(201);
+        $this->restContext->theHeaderShouldBeEqualTo('Content-Type', 'application/json');
+        $this->jsonContext->theResponseShouldBeInJson();
+
+        /** @var User $user */
+        $user = $this->em->getRepository(User::class)->find($this->entities['user1']->getId());
+        Assert::assertSame('Chuck', $user->firstName);
+        Assert::assertSame('Norris', $user->lastName);
+        Assert::assertSame('chuck@norris.chucknorris', $user->email);
+        Assert::assertTrue($user->isActive);
     }
 }
