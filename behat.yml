@@ -3,7 +3,6 @@ default:
     default:
       contexts:
         - FeatureContext:
-            kernel: '@kernel'
             em: '@doctrine.orm.entity_manager'
         - GroupContext:
             em: '@doctrine.orm.entity_manager'
