@@ -35,14 +35,8 @@ class UserContext implements Context
         $this->jsonContext = $scope->getEnvironment()->getContext(JsonContext::class);
     }
 
-    /** @BeforeScenario @captureCreateUser */
-    public function beforeCreateUserHook(BeforeScenarioScope $scope)
-    {
-        $this->beforeScanarioUsers = $this->em->getRepository(User::class)->findAll();
-    }
-
     /** @Given there is a users in a group */
-    public function thereIsAUsersInAGroup()
+    public function givenThereIsAUsersInAGroup()
     {
         $writers = new Group('Writers');
         $anderson = new User('Victor', 'Anderson', 'victor@anderson.org', true, $writers);
@@ -56,11 +50,74 @@ class UserContext implements Context
         $this->entities = ['writers' => $writers, 'anderson' => $anderson, 'browne' => $browne];
     }
 
+    /** @Given there is a user */
+    public function givenThereIsAUser()
+    {
+        $group1 = new Group('Technical support');
+        $this->em->persist($group1);
+
+        $user1 = new User('John', 'Smith', 'john.smith@company.com', true, $group1);
+        $this->em->persist($user1);
+
+        $this->em->flush();
+        $this->entities = ['group1' => $group1, 'user1' => $user1];
+    }
+
     /** @When I get a list of all users */
-    public function iGetAListOfAllUsers()
+    public function whenIGetAListOfAllUsers()
     {
         $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
         $this->restContext->iSendARequestTo('GET', '/users/');
+    }
+
+    /** @When I get a user */
+    public function whenIGetAUser()
+    {
+        $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
+        $this->restContext->iSendARequestTo('GET', sprintf('/users/%d/', $this->entities['user1']->getId()));
+    }
+
+    /** @When I create a user */
+    public function whenICreateAUser()
+    {
+        $this->beforeScanarioUsers = $this->em->getRepository(User::class)->findAll();
+
+        $group = new Group('Chuck Norris');
+        $this->em->persist($group);
+        $this->em->flush();
+        $this->entities['group1'] = $group;
+
+        $this->restContext->iAddHeaderEqualTo('Content-Type', 'application/json');
+        $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
+        $body = /** @lang JSON */ <<<'JSON'
+{
+  "firstName": "Chuck",
+  "lastName": "Norris",
+  "email": "chuck@norris.chucknorris",
+  "isActive": true,
+  "groupId": {group1.id}
+}
+JSON;
+        $body = new PyStringNode([$body], 0);
+        $body = HttpContext::substituteParameter($body, '{group1.id}', $group->getId());
+        $this->restContext->iSendARequestTo('POST', '/users/', $body);
+    }
+
+    /** @When I update user info */
+    public function whenIUpdateUserInfo()
+    {
+        $this->restContext->iAddHeaderEqualTo('Content-Type', 'application/json');
+        $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
+        $body = /** @lang JSON */ <<<'JSON'
+{
+  "firstName": "Mary",
+  "lastName": "Adams",
+  "email": "mary.adams@company.com",
+  "isActive": false
+}
+JSON;
+        $body = new PyStringNode([$body], 0);
+        $this->restContext->iSendARequestTo('PUT', sprintf('/users/%d/', $this->entities['user1']->getId()), $body);
     }
 
     /** @Then I see a list of all users */
@@ -136,26 +193,6 @@ JSON;
         $this->jsonContext->theJsonShouldBeValidAccordingToThisSchema($pySchema);
     }
 
-    /** @Given there is a user */
-    public function givenThereIsAUser()
-    {
-        $group1 = new Group('Technical support');
-        $this->em->persist($group1);
-
-        $user1 = new User('John', 'Smith', 'john.smith@company.com', true, $group1);
-        $this->em->persist($user1);
-
-        $this->em->flush();
-        $this->entities = ['group1' => $group1, 'user1' => $user1];
-    }
-
-    /** @When I get a user */
-    public function whenIGetAUser()
-    {
-        $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
-        $this->restContext->iSendARequestTo('GET', sprintf('/users/%d/', $this->entities['user1']->getId()));
-    }
-
     /** @Then I see a user */
     public function thenISeeAUser()
     {
@@ -204,23 +241,6 @@ JSON;
         $this->jsonContext->theJsonShouldBeValidAccordingToThisSchema($pySchema);
     }
 
-    /** @When I update user info */
-    public function whenIUpdateUserInfo()
-    {
-        $this->restContext->iAddHeaderEqualTo('Content-Type', 'application/json');
-        $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
-        $body = /** @lang JSON */ <<<'JSON'
-{
-  "firstName": "Mary",
-  "lastName": "Adams",
-  "email": "mary.adams@company.com",
-  "isActive": false
-}
-JSON;
-        $body = new PyStringNode([$body], 0);
-        $this->restContext->iSendARequestTo('PUT', sprintf('/users/%d/', $this->entities['user1']->getId()), $body);
-    }
-
     /** @Then user info was updated */
     public function thenUserInfoWasUpdated()
     {
@@ -234,32 +254,6 @@ JSON;
         Assert::assertSame('Adams', $user->lastName);
         Assert::assertSame('mary.adams@company.com', $user->email);
         Assert::assertFalse($user->isActive);
-    }
-
-    /** @When I create a user */
-    public function whenICreateAUser()
-    {
-        $this->beforeScanarioUsers = $this->em->getRepository(User::class)->findAll();
-
-        $group = new Group('Chuck Norris');
-        $this->em->persist($group);
-        $this->em->flush();
-        $this->entities['group1'] = $group;
-
-        $this->restContext->iAddHeaderEqualTo('Content-Type', 'application/json');
-        $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
-        $body = /** @lang JSON */ <<<'JSON'
-{
-  "firstName": "Chuck",
-  "lastName": "Norris",
-  "email": "chuck@norris.chucknorris",
-  "isActive": true,
-  "groupId": {group1.id}
-}
-JSON;
-        $body = new PyStringNode([$body], 0);
-        $body = HttpContext::substituteParameter($body, '{group1.id}', $group->getId());
-        $this->restContext->iSendARequestTo('POST', '/users/', $body);
     }
 
     /** @Then the user was created */
