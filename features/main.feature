@@ -63,3 +63,8 @@ Feature: groups and users management
     Given there is a user
     When I get a user
     Then I see a user
+
+  Scenario: Modify user
+    Given there is a user
+    When I update user info
+    Then user info was updated

@@ -66,7 +66,7 @@ class UserContext implements Context
     public function userShouldBeCreated(string $fullName)
     {
         $user = $this->getCreatedUser();
-        Assert::assertSame($fullName, "{$user->getFirstName()} {$user->getLastName()}");
+        Assert::assertSame($fullName, "{$user->firstName} {$user->lastName}");
     }
 
     /** @Then response should contain created user id */
@@ -239,5 +239,38 @@ JSON;
         $pySchema = HttpContext::substituteParameter($pySchema, '{group1.id}', $this->entities['group1']->getId());
         $pySchema = HttpContext::substituteParameter($pySchema, '{user1.id}', $this->entities['user1']->getId());
         $this->jsonContext->theJsonShouldBeValidAccordingToThisSchema($pySchema);
+    }
+
+    /** @When I update user info */
+    public function whenIUpdateUserInfo()
+    {
+        $this->restContext->iAddHeaderEqualTo('Content-Type', 'application/json');
+        $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
+        $json = /** @lang JSON */ <<<'JSON'
+{
+  "firstName": "Mary",
+  "lastName": "Adams",
+  "email": "mary.adams@company.com",
+  "isActive": false
+}
+JSON;
+        $pyNode = new PyStringNode([$json], 0);
+        $body = HttpContext::substituteParameter($pyNode, '{group1.id}', $this->entities['group1']->getId());
+        $this->restContext->iSendARequestTo('PUT', sprintf('/users/%d/', $this->entities['user1']->getId()), $body);
+    }
+
+    /** @Then user info was updated */
+    public function thenUserInfoWasUpdated()
+    {
+        $this->minkContext->assertResponseStatus(200);
+        $this->jsonContext->theResponseShouldBeInJson();
+        $this->restContext->theHeaderShouldBeEqualTo('Content-Type', 'application/json');
+
+        /** @var User $user */
+        $user = $this->em->getRepository(User::class)->find($this->entities['user1']->getId());
+        Assert::assertSame('Mary', $user->firstName);
+        Assert::assertSame('Adams', $user->lastName);
+        Assert::assertSame('mary.adams@company.com', $user->email);
+        Assert::assertFalse($user->isActive);
     }
 }

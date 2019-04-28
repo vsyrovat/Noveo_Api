@@ -5,7 +5,7 @@ namespace App\Domain\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="App\Persistence\Repository\UserRepository")
  * @ORM\Table(name="`user`")
  */
 class User
@@ -21,27 +21,27 @@ class User
      * @ORM\ManyToOne(targetEntity="Group")
      * @ORM\JoinColumn(name="group_id", referencedColumnName="id", nullable=false)
      */
-    private $group;
+    public $group;
 
     /**
      * @ORM\Column(name="first_name", type="string", nullable=false)
      */
-    private $firstName;
+    public $firstName;
 
     /**
      * @ORM\Column(name="last_name", type="string", nullable=false)
      */
-    private $lastName;
+    public $lastName;
 
     /**
      * @ORM\Column(name="email", type="string", nullable=false, unique=true)
      */
-    private $email;
+    public $email;
 
     /**
      * @ORM\Column(name="is_active", type="boolean", nullable=false)
      */
-    private $isActive;
+    public $isActive;
 
     /**
      * @ORM\Column(name="created_at", type="datetime_immutable", nullable=false)
@@ -62,35 +62,5 @@ class User
     public function getId(): int
     {
         return (int)$this->id;
-    }
-
-    public function getGroup(): Group
-    {
-        return $this->group;
-    }
-
-    public function getFirstName(): string
-    {
-        return $this->firstName;
-    }
-
-    public function getLastName(): string
-    {
-        return $this->lastName;
-    }
-
-    public function getEmail(): string
-    {
-        return $this->email;
-    }
-
-    public function isActive(): bool
-    {
-        return $this->isActive;
-    }
-
-    public function getCreatedAt(): \DateTimeImmutable
-    {
-        return $this->createdAt;
     }
 }
