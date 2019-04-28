@@ -6,6 +6,7 @@ use Behat\Behat\Context\Context;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Gherkin\Node\PyStringNode;
 use Behat\MinkExtension\Context\MinkContext;
+use Behatch\Context\RestContext;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Assert;
 
