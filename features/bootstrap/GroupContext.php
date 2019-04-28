@@ -90,12 +90,6 @@ class GroupContext implements Context
         Assert::assertSame($groupName, $group);
     }
 
-    /** @When API-user sends PUT request to update mentioned group */
-    public function sendPutToCapturedGroup(PyStringNode $body)
-    {
-        $this->httpContext->apiUserSendsRequest('PUT', "/groups/{$this->capturedGroupId}/", $body);
-    }
-
     /** @Then mentioned group should be named as :groupName */
     public function mentionedGroupShouldBeNamedAs(string $groupName)
     {
