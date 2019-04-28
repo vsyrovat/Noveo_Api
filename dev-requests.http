@@ -2,7 +2,7 @@ POST http://localhost:8000/groups/
 Content-Type: application/json
 
 {
-  "name": "Helicopter pilots"
+  "name": "Helicopter pildots"
 }
 
 ###

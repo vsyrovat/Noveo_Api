@@ -22,6 +22,7 @@
         "behat/symfony2-extension": "^2.1",
         "behatch/contexts": "^3.2",
         "phpunit/phpunit": "^8.1",
+        "symfony/var-dumper": "4.2.*",
         "symfony/web-server-bundle": "4.2.*"
     },
     "config": {

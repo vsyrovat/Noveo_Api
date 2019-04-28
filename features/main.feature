@@ -5,14 +5,9 @@ Feature: groups and users management
   - I want to modify the list of users of a group
 
   Scenario: create a group
-    Given group "Spaceship operators" does not exists
-    When API-user sends POST request to "/groups/"
-    """
-    {"name":"Spaceship operators"}
-    """
-    Then group "Spaceship operators" should exists
-    And the JSON node "success" should be true
-    And response body should be equal to id of group "Spaceship operators"
+    When I create a group
+    Then a group was created
+    And I see a group
 
   Scenario: error create group with same name
     Given group "Monkey moneymakers" exists

@@ -27,7 +27,7 @@ class CreateGroupController extends AbstractFOSRestController
         $name = $request->request->get('name');
         try {
             $group = $this->createGroup->execute($name);
-            return View::create(['success' => true, 'data' => ['id' => $group->getId()], 'msg' => ''], Response::HTTP_CREATED);
+            return View::create(['success' => true, 'data' => $group], Response::HTTP_CREATED);
         } catch (DuplicateGroupNameException $e) {
             return View::create(['success' => false, 'data' => [], 'msg' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
