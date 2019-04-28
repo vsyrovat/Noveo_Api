@@ -11,16 +11,15 @@ use PHPUnit\Framework\Assert;
 
 class GroupContext implements Context
 {
-    private $em;
-    /** @var HttpContext */
-    private $httpContext;
-    /** @var RestContext */
-    private $restContext;
-    /** @var MinkContext */
-    private $minkContext;
     /** @var JsonContext */
     private $jsonContext;
-    private $beforeScanarioGroups;
+    /** @var MinkContext */
+    private $minkContext;
+    /** @var RestContext */
+    private $restContext;
+
+    private $em;
+    private $beforeScenarioGroups;
     private $store;
 
     public function __construct(EntityManagerInterface $em)
@@ -31,10 +30,9 @@ class GroupContext implements Context
     /** @BeforeScenario */
     public function gatherContexts(BeforeScenarioScope $scope)
     {
-        $this->httpContext = $scope->getEnvironment()->getContext(HttpContext::class);
+        $this->jsonContext = $scope->getEnvironment()->getContext(JsonContext::class);
         $this->minkContext = $scope->getEnvironment()->getContext(MinkContext::class);
         $this->restContext = $scope->getEnvironment()->getContext(RestContext::class);
-        $this->jsonContext = $scope->getEnvironment()->getContext(JsonContext::class);
     }
 
     /** @Given there is a group */
@@ -63,7 +61,7 @@ class GroupContext implements Context
     /** @When I create a group */
     public function whenICreateAGroup()
     {
-        $this->beforeScanarioGroups = $this->em->getRepository(Group::class)->findAll();
+        $this->beforeScenarioGroups = $this->em->getRepository(Group::class)->findAll();
 
         $this->restContext->iAddHeaderEqualTo('Content-Type', 'application/json');
         $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
@@ -118,7 +116,7 @@ JSON;
     {
         $diff = array_values(array_udiff(
             $this->em->getRepository(Group::class)->findAll(),
-            $this->beforeScanarioGroups,
+            $this->beforeScenarioGroups,
             static function (Group $a, Group $b) {
                 return $a->getId() <=> $b->getId();
             }

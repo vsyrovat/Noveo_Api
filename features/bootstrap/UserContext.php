@@ -12,14 +12,15 @@ use PHPUnit\Framework\Assert;
 
 class UserContext implements Context
 {
-    private $em;
+    /** @var JsonContext */
+    private $jsonContext;
     /** @var MinkContext */
     private $minkContext;
     /** @var RestContext */
     private $restContext;
-    /** @var JsonContext */
-    private $jsonContext;
-    private $beforeScanarioUsers;
+
+    private $em;
+    private $beforeScenarioUsers;
     private $store;
 
     public function __construct(EntityManagerInterface $em)
@@ -30,9 +31,9 @@ class UserContext implements Context
     /** @BeforeScenario */
     public function gatherContexts(BeforeScenarioScope $scope)
     {
+        $this->jsonContext = $scope->getEnvironment()->getContext(JsonContext::class);
         $this->minkContext = $scope->getEnvironment()->getContext(MinkContext::class);
         $this->restContext = $scope->getEnvironment()->getContext(RestContext::class);
-        $this->jsonContext = $scope->getEnvironment()->getContext(JsonContext::class);
     }
 
     /** @Given there is a users in a group */
@@ -80,7 +81,7 @@ class UserContext implements Context
     /** @When I create a user */
     public function whenICreateAUser()
     {
-        $this->beforeScanarioUsers = $this->em->getRepository(User::class)->findAll();
+        $this->beforeScenarioUsers = $this->em->getRepository(User::class)->findAll();
 
         $group = new Group('Chuck Norris');
         $this->em->persist($group);
@@ -261,7 +262,7 @@ JSON;
     {
         $diff = array_values(array_udiff(
             $this->em->getRepository(User::class)->findAll(),
-            $this->beforeScanarioUsers,
+            $this->beforeScenarioUsers,
             static function (User $a, User $b) {
                 return $a->getId() <=> $b->getId();
             }
