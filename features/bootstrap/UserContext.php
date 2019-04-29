@@ -100,7 +100,7 @@ class UserContext implements Context
 }
 JSON;
         $body = new PyStringNode([$body], 0);
-        $body = HttpContext::substituteParameter($body, '{group1.id}', $group->getId());
+        $body = FeatureContext::substituteParameter($body, '{group1.id}', $group->getId());
         $this->restContext->iSendARequestTo('POST', '/users/', $body);
     }
 
@@ -188,9 +188,9 @@ JSON;
 }
 JSON;
         $pySchema = new PyStringNode([$schema], 0);
-        $pySchema = HttpContext::substituteParameter($pySchema, '{writers.id}', $this->store['writers']->getId());
-        $pySchema = HttpContext::substituteParameter($pySchema, '{anderson.id}', $this->store['anderson']->getId());
-        $pySchema = HttpContext::substituteParameter($pySchema, '{browne.id}', $this->store['browne']->getId());
+        $pySchema = FeatureContext::substituteParameter($pySchema, '{writers.id}', $this->store['writers']->getId());
+        $pySchema = FeatureContext::substituteParameter($pySchema, '{anderson.id}', $this->store['anderson']->getId());
+        $pySchema = FeatureContext::substituteParameter($pySchema, '{browne.id}', $this->store['browne']->getId());
         $this->jsonContext->theJsonShouldBeValidAccordingToThisSchema($pySchema);
     }
 
@@ -237,8 +237,8 @@ JSON;
 }
 JSON;
         $pySchema = new PyStringNode([$schema], 0);
-        $pySchema = HttpContext::substituteParameter($pySchema, '{group1.id}', $this->store['group1']->getId());
-        $pySchema = HttpContext::substituteParameter($pySchema, '{user1.id}', $this->store['user1']->getId());
+        $pySchema = FeatureContext::substituteParameter($pySchema, '{group1.id}', $this->store['group1']->getId());
+        $pySchema = FeatureContext::substituteParameter($pySchema, '{user1.id}', $this->store['user1']->getId());
         $this->jsonContext->theJsonShouldBeValidAccordingToThisSchema($pySchema);
     }
 

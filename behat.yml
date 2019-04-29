@@ -9,7 +9,6 @@ default:
         - UserContext:
             em: '@doctrine.orm.entity_manager'
         - \Behatch\Context\RestContext
-        - HttpContext
         - \Behat\MinkExtension\Context\MinkContext
         - JsonContext
 

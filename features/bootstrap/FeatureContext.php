@@ -1,6 +1,7 @@
 <?php
 
 use Behat\Behat\Context\Context;
+use Behat\Gherkin\Node\PyStringNode;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
@@ -16,6 +17,15 @@ class FeatureContext implements Context
     public function __construct(EntityManagerInterface $em)
     {
         $this->em = $em;
+    }
+
+    public static function substituteParameter(PyStringNode $node, string $sign, $value)
+    {
+        $strings = [];
+        foreach ($node->getStrings() as $string) {
+            $strings[] = str_replace($sign, $value, $string);
+        }
+        return new PyStringNode($strings, $node->getLine());
     }
 
     /**

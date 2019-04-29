@@ -154,7 +154,7 @@ JSON;
 }
 JSON;
         $schema = new PyStringNode([$schema], 0);
-        $schema = HttpContext::substituteParameter($schema, '{group1.id}', $this->store['group1']->getId());
+        $schema = FeatureContext::substituteParameter($schema, '{group1.id}', $this->store['group1']->getId());
         $this->jsonContext->theJsonShouldBeValidAccordingToThisSchema($schema);
     }
 
@@ -209,8 +209,8 @@ JSON;
 }
 JSON;
         $schema = new PyStringNode([$schema], 0);
-        $schema = HttpContext::substituteParameter($schema, '{group1.id}', $this->store['group1']->getId());
-        $schema = HttpContext::substituteParameter($schema, '{group2.id}', $this->store['group2']->getId());
+        $schema = FeatureContext::substituteParameter($schema, '{group1.id}', $this->store['group1']->getId());
+        $schema = FeatureContext::substituteParameter($schema, '{group2.id}', $this->store['group2']->getId());
         $this->jsonContext->theJsonShouldBeValidAccordingToThisSchema($schema);
     }
 
