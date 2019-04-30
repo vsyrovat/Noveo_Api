@@ -9,11 +9,11 @@ use FOS\RestBundle\View\View;
 
 class GetGroupsController extends AbstractFOSRestController
 {
-    private $getGroupList;
+    private $query;
 
-    public function __construct(GetGroups $getGroupList)
+    public function __construct(GetGroups $query)
     {
-        $this->getGroupList = $getGroupList;
+        $this->query = $query;
     }
 
     /**
@@ -21,7 +21,7 @@ class GetGroupsController extends AbstractFOSRestController
      */
     public function action()
     {
-        $groups = $this->getGroupList->execute();
+        $groups = $this->query->execute();
         return View::create(['success' => true, 'data' => $groups]);
     }
 }
