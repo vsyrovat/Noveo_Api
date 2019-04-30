@@ -8,7 +8,7 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
 /**
- * @method Group find($id)
+ * @method Group find($id, $lockMode = null, $lockVersion = null)
  */
 class GroupRepository extends ServiceEntityRepository
 {
