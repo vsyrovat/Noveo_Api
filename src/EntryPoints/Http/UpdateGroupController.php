@@ -7,6 +7,7 @@ use App\Domain\Exception\GroupNotFound;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\View\View;
+use Swagger\Annotations as SWG;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -21,6 +22,42 @@ class UpdateGroupController extends AbstractFOSRestController
 
     /**
      * @Rest\Put("/groups/{id}/", requirements={"id"="\d+"})
+     *
+     * @SWG\Put(
+     *     summary="Update group",
+     *     tags={"Groups"},
+     *     produces={"application/json"},
+     *
+     *     @SWG\Parameter(
+     *          name="id",
+     *          in="path",
+     *          type="integer",
+     *          required=true
+     *     ),
+     *     @SWG\Parameter(
+     *          name="body",
+     *          in="body",
+     *          @SWG\Schema(type="object",
+     *              @SWG\Property(property="name", type="string")
+     *          )
+     *     ),
+     *
+     *     @SWG\Response(
+     *          response="200",
+     *          description="Success",
+     *          @SWG\Schema(type="object",
+     *              @SWG\Property(property="success", type="boolean", example=true)
+     *          )
+     *     ),
+     *     @SWG\Response(
+     *          response="400",
+     *          description="Input error",
+     *          @SWG\Schema(type="object",
+     *              @SWG\Property(property="success", type="boolean", example=false),
+     *              @SWG\Property(property="msg", type="string")
+     *          )
+     *     )
+     * )
      */
     public function action(Request $request, int $id)
     {

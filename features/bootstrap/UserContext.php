@@ -136,7 +136,7 @@ JSON;
     },
     "user": {
       "type": "object",
-      "required": ["id", "group", "first_name", "last_name", "email", "is_active"]
+      "required": ["id", "group", "firstName", "lastName", "email", "isActive"]
     }
   },
 
@@ -152,10 +152,10 @@ JSON;
           "$ref": "#/definitions/user",
           "properties": {
             "id": {"enum": [{anderson.id}]},
-            "first_name": {"pattern": "^Victor$"},
-            "last_name": {"pattern": "^Anderson$"},
+            "firstName": {"pattern": "^Victor$"},
+            "lastName": {"pattern": "^Anderson$"},
             "email": {"pattern": "^victor@anderson.org$"},
-            "is_active": {"enum": [true]},
+            "isActive": {"enum": [true]},
             "group": {
               "$ref": "#/definitions/group",
               "properties": {
@@ -169,10 +169,10 @@ JSON;
           "$ref": "#/definitions/user",
           "properties": {
             "id": {"enum": [{browne.id}]},
-            "first_name": {"pattern": "^Thomas"},
-            "last_name": {"pattern": "^Browne$"},
+            "firstName": {"pattern": "^Thomas"},
+            "lastName": {"pattern": "^Browne$"},
             "email": {"pattern": "^thomas@browne.org$"},
-            "is_active": {"enum": [false]},
+            "isActive": {"enum": [false]},
             "group": {
               "$ref": "#/definitions/group",
               "properties": {
@@ -209,7 +209,7 @@ JSON;
     },
     "user": {
       "type": "object",
-      "required": ["id", "group", "first_name", "last_name", "email", "is_active"]
+      "required": ["id", "group", "firstName", "lastName", "email", "isActive"]
     }
   },
 
@@ -220,10 +220,10 @@ JSON;
       "$ref": "#/definitions/user",
       "properties": {
         "id": {"enum": [{user1.id}]},
-        "first_name": {"pattern": "^John$"},
-        "last_name": {"pattern": "^Smith$"},
+        "firstName": {"pattern": "^John$"},
+        "lastName": {"pattern": "^Smith$"},
         "email": {"pattern": "^john.smith@company.com$"},
-        "is_active": {"enum": [true]},
+        "isActive": {"enum": [true]},
         "group": {
           "$ref": "#/definitions/group",
           "properties": {
