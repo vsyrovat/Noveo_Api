@@ -2,6 +2,8 @@
 
 namespace App\Domain\Query;
 
+use App\Domain\Entity\User;
+use App\Domain\Exception\UserNotFound;
 use App\Persistence\Repository\UserRepository;
 
 class GetUser
@@ -13,7 +15,10 @@ class GetUser
         $this->userRepository = $userRepository;
     }
 
-    public function execute(int $userId)
+    /**
+     * @throws UserNotFound
+     */
+    public function execute(int $userId): User
     {
         return $this->userRepository->findOrThrow($userId);
     }
