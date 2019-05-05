@@ -2,7 +2,9 @@
 
 namespace App\Domain\Entity;
 
+use App\Framework\Changeset\Annotations\Api;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass="App\Persistence\Repository\GroupRepository")
@@ -19,6 +21,10 @@ class Group
 
     /**
      * @ORM\Column(name="name", type="string", nullable=false, unique=true)
+     * @Assert\NotBlank()
+     * @Assert\Type("string")
+     * @Assert\Length(max="30")
+     * @Api()
      */
     private $name;
 

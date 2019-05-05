@@ -3,27 +3,26 @@
 namespace App\Domain\Command;
 
 use App\Domain\Entity\Group;
-use App\Domain\Exception\GroupNotFound;
+use App\Domain\Validation\GroupValidator;
 use Doctrine\ORM\EntityManagerInterface;
 
 class UpdateGroup
 {
     private $em;
+    private $groupValidator;
 
-    public function __construct(EntityManagerInterface $em)
+    public function __construct(EntityManagerInterface $em, GroupValidator $groupValidator)
     {
         $this->em = $em;
+        $this->groupValidator = $groupValidator;
     }
 
     public function execute(int $id, string $name): void
     {
         $this->em->transactional(function () use ($id, $name) {
-            $group = $this->em->getRepository(Group::class)->find($id);
-            if ($group === null) {
-                throw new GroupNotFound($id);
-            }
-
+            $group = $this->em->getRepository(Group::class)->findOrThrow($id);
             $group->setName($name);
+            $this->groupValidator->assertGroupValid($group);
             $this->em->flush();
         });
     }

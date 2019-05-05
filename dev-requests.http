@@ -7,6 +7,15 @@ Content-Type: application/json
 
 ###
 
+PUT http://localhost:8000/groups/2/
+Content-Type: application/json
+
+{
+  "name": "Helicopter pildots"
+}
+
+###
+
 GET http://localhost:8000/groups/
 
 ###
