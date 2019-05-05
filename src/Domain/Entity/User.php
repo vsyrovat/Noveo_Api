@@ -2,7 +2,7 @@
 
 namespace App\Domain\Entity;
 
-use App\Framework\Annotation\Annotations\Api;
+use App\Framework\Changeset\Annotations\Api;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 

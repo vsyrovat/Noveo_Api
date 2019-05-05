@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace App\Framework\Annotation;
+namespace App\Framework\Changeset;
 
 use App\Domain\Exception\ValidationException;
-use App\Framework\Annotation\Annotations\Api;
+use App\Framework\Changeset\Annotations\Api;
 use Doctrine\Common\Annotations\Reader;
 
 class ChangesetValidator
@@ -20,6 +20,7 @@ class ChangesetValidator
      */
     public function assertChangesetValid(array $changeset, string $entityClassName): void
     {
+        /** @noinspection PhpUnhandledExceptionInspection */
         $entityReflection = new \ReflectionClass($entityClassName);
         $violations = [];
 

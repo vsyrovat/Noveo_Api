@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace App\Framework\Annotation\Annotations;
+namespace App\Framework\Changeset\Annotations;
 
 /**
  * @Annotation

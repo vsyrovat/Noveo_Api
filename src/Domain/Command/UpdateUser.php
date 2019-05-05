@@ -4,7 +4,7 @@ namespace App\Domain\Command;
 
 use App\Domain\Entity\User;
 use App\Domain\Exception\ValidationException;
-use App\Framework\Annotation\ChangesetValidator;
+use App\Framework\Changeset\ChangesetValidator;
 use App\Persistence\Repository\GroupRepository;
 use App\Persistence\Repository\UserRepository;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
