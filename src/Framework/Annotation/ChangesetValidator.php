@@ -24,6 +24,7 @@ class ChangesetValidator
         $violations = [];
 
         foreach ($entityReflection->getProperties() as $property) {
+            /** @var Api $apiAnnotation */
             $apiAnnotation = $this->annotationReader->getPropertyAnnotation($property, Api::class);
             if ($apiAnnotation !== null) {
                 $propertyName = $property->getName();

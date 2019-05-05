@@ -56,3 +56,8 @@ Feature: groups and users management
     When I update user info with some null fields
     Then request is invalid
     And response contains violation list about null fields
+
+  Scenario: Move user to another group
+    Given there is a user and another group
+    When I move user to another group
+    Then user was moved to another group

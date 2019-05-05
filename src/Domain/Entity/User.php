@@ -22,6 +22,7 @@ class User
     /**
      * @ORM\ManyToOne(targetEntity="Group")
      * @ORM\JoinColumn(name="group_id", referencedColumnName="id", nullable=false)
+     * @Api()
      */
     public $group;
 

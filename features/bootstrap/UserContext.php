@@ -64,6 +64,17 @@ class UserContext implements Context
         $this->store = ['group1' => $group1, 'user1' => $user1];
     }
 
+    /** @Given there is a user and another group */
+    public function thereIsAUserAndAnotherGroup()
+    {
+        $this->givenThereIsAUser();
+
+        $group2 = new Group('Another');
+        $this->em->persist($group2);
+        $this->em->flush();
+        $this->store['group2'] = $group2;
+    }
+
     /** @When I get a list of all users */
     public function whenIGetAListOfAllUsers()
     {
@@ -114,10 +125,12 @@ JSON;
   "firstName": "Mary",
   "lastName": "Adams",
   "email": "mary.adams@company.com",
-  "isActive": false
+  "isActive": false,
+  "group": {group1.id}
 }
 JSON;
         $body = new PyStringNode([$body], 0);
+        $body = FeatureContext::substituteParameter($body, '{group1.id}', $this->store['group1']->getId());
         $this->restContext->iSendARequestTo('PUT', sprintf('/users/%d/', $this->store['user1']->getId()), $body);
     }
 
@@ -146,10 +159,31 @@ JSON;
   "firstName": null,
   "lastName": "Adams",
   "email": "mary.adams@company.com",
-  "isActive": false
+  "isActive": false,
+  "group": {group1.id}
 }
 JSON;
         $body = new PyStringNode([$body], 0);
+        $body = FeatureContext::substituteParameter($body, '{group1.id}', $this->store['group1']->getId());
+        $this->restContext->iSendARequestTo('PUT', sprintf('/users/%d/', $this->store['user1']->getId()), $body);
+    }
+
+    /** @When I move user to another group */
+    public function whenIMoveUserToAnotherGroup()
+    {
+        $this->restContext->iAddHeaderEqualTo('Content-Type', 'application/json');
+        $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
+        $body = /** @lang JSON */ <<<'JSON'
+{
+  "firstName": "John",
+  "lastName": "Smith",
+  "email": "john.smith@company.com",
+  "isActive": true,
+  "group": {group2.id}
+}
+JSON;
+        $body = new PyStringNode([$body], 0);
+        $body = FeatureContext::substituteParameter($body, '{group2.id}', $this->store['group2']->getId());
         $this->restContext->iSendARequestTo('PUT', sprintf('/users/%d/', $this->store['user1']->getId()), $body);
     }
 
@@ -385,5 +419,15 @@ JSON;
 JSON;
         $schema = new PyStringNode([$schema], 0);
         $this->jsonContext->theJsonShouldBeValidAccordingToThisSchema($schema);
+    }
+
+    /** @Then user was moved to another group */
+    public function thenUserWasMovedToAnotherGroup()
+    {
+        $this->em->clear();
+        $this->minkContext->assertResponseStatus(200);
+        $this->restContext->theHeaderShouldBeEqualTo('Content-Type', 'application/json');
+        $user = $this->em->getRepository(User::class)->find($this->store['user1']->getId());
+        Assert::assertSame($this->store['group2']->getId(), $user->group->getId());
     }
 }
