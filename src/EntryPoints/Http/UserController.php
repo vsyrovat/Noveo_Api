@@ -81,6 +81,8 @@ class UserController extends AbstractFOSRestController
             return View::create(['success' => true, 'data' => $user], Response::HTTP_CREATED);
         } catch (GroupNotFound|DuplicateUserEmail $e) {
             return View::create(['success' => false, 'msg' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        } catch (ValidationException $e) {
+            return View::create(['success' => false, 'violatons' => $e->violations], Response::HTTP_BAD_REQUEST);
         }
     }
 

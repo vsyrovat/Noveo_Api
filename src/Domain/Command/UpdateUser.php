@@ -5,21 +5,27 @@ namespace App\Domain\Command;
 use App\Domain\Entity\Group;
 use App\Domain\Entity\User;
 use App\Domain\Exception\ValidationException;
+use App\Domain\Validation\GroupValidator;
+use App\Domain\Validation\UserValidator;
 use App\Framework\Changeset\ChangesetValidator;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class UpdateUser
 {
     private $em;
-    private $validator;
     private $changesetValidator;
+    private $userValidator;
+    private $groupValidator;
 
-    public function __construct(EntityManagerInterface $em, ValidatorInterface $validator, ChangesetValidator $changesetValidator)
-    {
+    public function __construct(EntityManagerInterface $em,
+                                ChangesetValidator $changesetValidator,
+                                UserValidator $userValidator,
+                                GroupValidator $groupValidator
+    ) {
         $this->em = $em;
-        $this->validator = $validator;
         $this->changesetValidator = $changesetValidator;
+        $this->userValidator = $userValidator;
+        $this->groupValidator = $groupValidator;
     }
 
     /**
@@ -37,13 +43,13 @@ class UpdateUser
             $user->email = $changeset['email'];
             $user->isActive = $changeset['isActive'];
 
+            $oldGroup = $user->group;
             $group = $this->em->getRepository(Group::class)->findOrThrow($changeset['group']);
             $user->group = $group;
 
-            $violations = $this->validator->validate($user);
-            if ($violations->count() > 0) {
-                throw new ValidationException($violations);
-            }
+            $this->userValidator->assertUserValid($user);
+            $this->groupValidator->assertGroupValid($group);
+            $this->groupValidator->assertGroupValid($oldGroup);
 
             $this->em->flush();
         });

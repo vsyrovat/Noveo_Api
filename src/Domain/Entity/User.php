@@ -30,6 +30,7 @@ class User
      * @ORM\Column(name="first_name", type="string", nullable=false)
      * @Assert\NotBlank()
      * @Assert\Type("string")
+     * @Assert\Length(max="50")
      * @Api()
      */
     public $firstName;
@@ -38,6 +39,7 @@ class User
      * @ORM\Column(name="last_name", type="string", nullable=false)
      * @Assert\NotBlank()
      * @Assert\Type("string")
+     * @Assert\Length(max="50")
      * @Api()
      */
     public $lastName;
@@ -46,6 +48,8 @@ class User
      * @ORM\Column(name="email", type="string", nullable=false, unique=true)
      * @Assert\NotBlank()
      * @Assert\Type("string")
+     * @Assert\Email()
+     * @Assert\Length(max="255")
      * @Api
      */
     public $email;
