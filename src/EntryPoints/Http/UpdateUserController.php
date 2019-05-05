@@ -2,9 +2,7 @@
 
 namespace App\EntryPoints\Http;
 
-use App\Domain\Command\UpdateUser\ChangesetFactory;
-use App\Domain\Command\UpdateUser\UpdateUser;
-use App\Domain\Entity\User;
+use App\Domain\Command\UpdateUser;
 use App\Domain\Exception\ValidationException;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Controller\Annotations as Rest;
@@ -16,12 +14,10 @@ use Symfony\Component\HttpFoundation\Response;
 class UpdateUserController extends AbstractFOSRestController
 {
     private $command;
-    private $changesetFactory;
 
-    public function __construct(UpdateUser $command, ChangesetFactory $changesetFactory)
+    public function __construct(UpdateUser $command)
     {
         $this->command = $command;
-        $this->changesetFactory = $changesetFactory;
     }
 
     /**
@@ -61,8 +57,7 @@ class UpdateUserController extends AbstractFOSRestController
     public function action(Request $request, int $id)
     {
         try {
-            $changeset = $this->changesetFactory->build($request->request->all(), User::class);
-            $this->command->execute($id, $changeset);
+            $this->command->execute($id, $request->request->all());
         } catch (ValidationException $e) {
             return View::create(['success' => false, 'violations' => $e->violations], Response::HTTP_BAD_REQUEST);
         }
