@@ -121,6 +121,38 @@ JSON;
         $this->restContext->iSendARequestTo('PUT', sprintf('/users/%d/', $this->store['user1']->getId()), $body);
     }
 
+    /** @When I update user info with incomplete data */
+    public function whenIUpdateUserInfoWithIncompleteData()
+    {
+        $this->restContext->iAddHeaderEqualTo('Content-Type', 'application/json');
+        $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
+        $body = /** @lang JSON */ <<<'JSON'
+{
+  "firstName": "Mary",
+  "lastName": "Adams"
+}
+JSON;
+        $body = new PyStringNode([$body], 0);
+        $this->restContext->iSendARequestTo('PUT', sprintf('/users/%d/', $this->store['user1']->getId()), $body);
+    }
+
+    /** @When I update user info with some null fields */
+    public function whenIUpdateUserInfoWithSomeNullFields()
+    {
+        $this->restContext->iAddHeaderEqualTo('Content-Type', 'application/json');
+        $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
+        $body = /** @lang JSON */ <<<'JSON'
+{
+  "firstName": null,
+  "lastName": "Adams",
+  "email": "mary.adams@company.com",
+  "isActive": false
+}
+JSON;
+        $body = new PyStringNode([$body], 0);
+        $this->restContext->iSendARequestTo('PUT', sprintf('/users/%d/', $this->store['user1']->getId()), $body);
+    }
+
     /** @Then I see a list of all users */
     public function iSeeAListOfAllUsers()
     {
@@ -284,5 +316,74 @@ JSON;
         Assert::assertSame('Norris', $user->lastName);
         Assert::assertSame('chuck@norris.chucknorris', $user->email);
         Assert::assertTrue($user->isActive);
+    }
+
+    /** @Then response contains violation list about missing fields */
+    public function thenResponseContainsViolationListAboutMissingFields()
+    {
+        $this->restContext->theHeaderShouldBeEqualTo('Content-Type', 'application/json');
+        $this->jsonContext->theResponseShouldBeInJson();
+
+        $schema = /** @lang JSON */ <<<'JSON'
+{
+  "type": "object",
+  "required": ["success", "violations"],
+  "properties": {
+    "success": {"enum": [false]},
+    "violations": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "propertyPath": {"enum": ["email"]},
+            "message": {"pattern": "^This field should be given$"}
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "propertyPath": {"enum": ["isActive"]},
+            "message": {"pattern": "^This field should be given$"}
+          }
+        }
+      ]
+    }
+  }
+}
+JSON;
+        $schema = new PyStringNode([$schema], 0);
+        $this->jsonContext->theJsonShouldBeValidAccordingToThisSchema($schema);
+    }
+
+    /** @Then response contains violation list about null fields */
+    public function thenResponseContainsViolationListAboutNullFields()
+    {
+        $this->restContext->theHeaderShouldBeEqualTo('Content-Type', 'application/json');
+        $this->jsonContext->theResponseShouldBeInJson();
+
+        $schema = /** @lang JSON */ <<<'JSON'
+{
+  "type": "object",
+  "required": ["success", "violations"],
+  "properties": {
+    "success": {"enum": [false]},
+    "violations": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "propertyPath": {"enum": ["firstName"]},
+            "message": {"pattern": "^This value should not be blank.$"}
+          }
+        }
+      ]
+    }
+  }
+}
+JSON;
+        $schema = new PyStringNode([$schema], 0);
+        $this->jsonContext->theJsonShouldBeValidAccordingToThisSchema($schema);
     }
 }

@@ -2,7 +2,9 @@
 
 namespace App\Domain\Entity;
 
+use App\Framework\Annotation\Annotations\Api;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass="App\Persistence\Repository\UserRepository")
@@ -25,21 +27,33 @@ class User
 
     /**
      * @ORM\Column(name="first_name", type="string", nullable=false)
+     * @Assert\NotBlank()
+     * @Assert\Type("string")
+     * @Api()
      */
     public $firstName;
 
     /**
      * @ORM\Column(name="last_name", type="string", nullable=false)
+     * @Assert\NotBlank()
+     * @Assert\Type("string")
+     * @Api()
      */
     public $lastName;
 
     /**
      * @ORM\Column(name="email", type="string", nullable=false, unique=true)
+     * @Assert\NotBlank()
+     * @Assert\Type("string")
+     * @Api
      */
     public $email;
 
     /**
      * @ORM\Column(name="is_active", type="boolean", nullable=false)
+     * @Assert\NotNull()
+     * @Assert\Type("boolean")
+     * @Api()
      */
     public $isActive;
 

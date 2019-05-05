@@ -2,20 +2,26 @@
 
 namespace App\EntryPoints\Http;
 
-use App\Domain\Command\UpdateUser;
+use App\Domain\Command\UpdateUser\ChangesetFactory;
+use App\Domain\Command\UpdateUser\UpdateUser;
+use App\Domain\Entity\User;
+use App\Domain\Exception\ValidationException;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\View\View;
 use Swagger\Annotations as SWG;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class UpdateUserController extends AbstractFOSRestController
 {
     private $command;
+    private $changesetFactory;
 
-    public function __construct(UpdateUser $command)
+    public function __construct(UpdateUser $command, ChangesetFactory $changesetFactory)
     {
         $this->command = $command;
+        $this->changesetFactory = $changesetFactory;
     }
 
     /**
@@ -54,11 +60,12 @@ class UpdateUserController extends AbstractFOSRestController
      */
     public function action(Request $request, int $id)
     {
-        $firstName = $request->request->get('firstName');
-        $lastName = $request->request->get('lastName');
-        $email = $request->request->get('email');
-        $isActive = $request->request->get('isActive');
-        $this->command->execute($id, $firstName, $lastName, $email, $isActive);
+        try {
+            $changeset = $this->changesetFactory->build($request->request->all(), User::class);
+            $this->command->execute($id, $changeset);
+        } catch (ValidationException $e) {
+            return View::create(['success' => false, 'violations' => $e->violations], Response::HTTP_BAD_REQUEST);
+        }
         return View::create(['success' => true]);
     }
 }

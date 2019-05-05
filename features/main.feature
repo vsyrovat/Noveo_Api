@@ -44,3 +44,15 @@ Feature: groups and users management
     Given there is a user
     When I update user info
     Then user info was updated
+
+  Scenario: Error on modify incomplete user data
+    Given there is a user
+    When I update user info with incomplete data
+    Then request is invalid
+    And response contains violation list about missing fields
+
+  Scenario: Error on modify user data with some NULLs
+    Given there is a user
+    When I update user info with some null fields
+    Then request is invalid
+    And response contains violation list about null fields
