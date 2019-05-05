@@ -15,7 +15,7 @@ class JsonContext extends \Behatch\Context\JsonContext
             if ($this->httpCallResultPool->getResult() instanceof HttpCallResult) {
                 parent::printLastJsonResponse();
             } else {
-                echo 'Last HTTP Result is unavailable';
+                echo "Last HTTP Result is unavailable\n";
             }
         }
         ob_flush();
