@@ -17,12 +17,14 @@ class UpdateGroup
 
     public function execute(int $id, string $name): void
     {
-        $group = $this->em->getRepository(Group::class)->find($id);
-        if ($group === null) {
-            throw new GroupNotFound($id);
-        }
+        $this->em->transactional(function () use ($id, $name) {
+            $group = $this->em->getRepository(Group::class)->find($id);
+            if ($group === null) {
+                throw new GroupNotFound($id);
+            }
 
-        $group->setName($name);
-        $this->em->flush();
+            $group->setName($name);
+            $this->em->flush();
+        });
     }
 }

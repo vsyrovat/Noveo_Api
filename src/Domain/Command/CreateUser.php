@@ -39,18 +39,14 @@ class CreateUser
      */
     public function execute(string $firstName, string $lastName, string $email, bool $isActive, int $groupId): User
     {
-        $this->em->beginTransaction();
-
-        try {
+        $user = $this->em->transactional(function () use ($email, $firstName, $lastName, $isActive, $groupId){
             $this->assertEmailNotExists($email);
             $group = $this->groupRepository->findOrThrow($groupId);
             $user = new User($firstName, $lastName, $email, $isActive, $group);
             $this->userRepository->save($user);
-            $this->em->commit();
             return $user;
-        } catch (\Exception $e) {
-            $this->em->rollback();
-            throw $e;
-        }
+        });
+
+        return $user;
     }
 }

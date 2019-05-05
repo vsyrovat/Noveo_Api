@@ -20,8 +20,7 @@ class CreateGroup
      */
     public function execute(string $groupName): Group
     {
-        $this->em->beginTransaction();
-        try {
+        $group = $this->em->transactional(function () use ($groupName){
             $existsGroup = $this->em->getRepository(Group::class)->findOneBy(['name' => $groupName]);
             if ($existsGroup !== null) {
                 throw new DuplicateGroupNameException($groupName);
@@ -30,11 +29,9 @@ class CreateGroup
             $group = new Group($groupName);
             $this->em->persist($group);
             $this->em->flush();
-            $this->em->commit();
             return $group;
-        } catch (\Exception $e) {
-            $this->em->rollback();
-            throw $e;
-        }
+        });
+
+        return $group;
     }
 }
