@@ -50,7 +50,7 @@ class UserController extends AbstractFOSRestController
      *              @SWG\Property(property="lastName", type="string"),
      *              @SWG\Property(property="email", type="string"),
      *              @SWG\Property(property="isActive", type="boolean"),
-     *              @SWG\Property(property="groupId", type="integer")
+     *              @SWG\Property(property="group", type="integer")
      *         )
      *     ),
      *
@@ -71,13 +71,7 @@ class UserController extends AbstractFOSRestController
     public function create(Request $request)
     {
         try {
-            $user = $this->createUserCommand->execute(
-                $request->request->get('firstName'),
-                $request->request->get('lastName'),
-                $request->request->get('email'),
-                $request->request->get('isActive'),
-                $request->request->get('groupId')
-            );
+            $user = $this->createUserCommand->execute($request->request->all());
             return View::create(['success' => true, 'data' => $user], Response::HTTP_CREATED);
         } catch (GroupNotFound|DuplicateUserEmail $e) {
             return View::create(['success' => false, 'msg' => $e->getMessage()], Response::HTTP_BAD_REQUEST);

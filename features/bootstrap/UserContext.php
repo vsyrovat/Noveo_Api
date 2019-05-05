@@ -107,7 +107,7 @@ class UserContext implements Context
   "lastName": "Norris",
   "email": "chuck@norris.chucknorris",
   "isActive": true,
-  "groupId": {group1.id}
+  "group": {group1.id}
 }
 JSON;
         $body = new PyStringNode([$body], 0);

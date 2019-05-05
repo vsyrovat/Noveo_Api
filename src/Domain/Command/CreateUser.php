@@ -7,16 +7,19 @@ use App\Domain\Entity\User;
 use App\Domain\Exception\DuplicateUserEmail;
 use App\Domain\Exception\GroupNotFound;
 use App\Domain\Validation\UserValidator;
+use App\Framework\Changeset\ChangesetValidator;
 use Doctrine\ORM\EntityManagerInterface;
 
 class CreateUser
 {
     private $em;
+    private $changesetValidator;
     private $userValidator;
 
-    public function __construct(EntityManagerInterface $em, UserValidator $userValidator)
+    public function __construct(EntityManagerInterface $em, ChangesetValidator $changesetValidator, UserValidator $userValidator)
     {
         $this->em = $em;
+        $this->changesetValidator = $changesetValidator;
         $this->userValidator = $userValidator;
     }
 
@@ -24,11 +27,18 @@ class CreateUser
      * @throws GroupNotFound
      * @throws DuplicateUserEmail
      */
-    public function execute(string $firstName, string $lastName, string $email, bool $isActive, int $groupId): User
+    public function execute(array $changeset): User
     {
-        $user = $this->em->transactional(function () use ($email, $firstName, $lastName, $isActive, $groupId){
-            $group = $this->em->getRepository(Group::class)->findOrThrow($groupId);
-            $user = new User($firstName, $lastName, $email, $isActive, $group);
+        $user = $this->em->transactional(function () use ($changeset){
+            $this->changesetValidator->assertChangesetValid($changeset, User::class);
+            $group = $this->em->getRepository(Group::class)->findOrThrow($changeset['group']);
+            $user = new User(
+                $changeset['firstName'],
+                $changeset['lastName'],
+                $changeset['email'],
+                $changeset['isActive'],
+                $group
+            );
             $this->userValidator->assertUserValid($user);
             $this->em->persist($user);
             $this->em->flush();
