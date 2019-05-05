@@ -2,11 +2,10 @@
 
 namespace App\Domain\Command;
 
+use App\Domain\Entity\Group;
 use App\Domain\Entity\User;
 use App\Domain\Exception\ValidationException;
 use App\Framework\Changeset\ChangesetValidator;
-use App\Persistence\Repository\GroupRepository;
-use App\Persistence\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -14,16 +13,12 @@ class UpdateUser
 {
     private $em;
     private $validator;
-    private $userRepository;
-    private $groupRepository;
     private $changesetValidator;
 
-    public function __construct(EntityManagerInterface $em, ValidatorInterface $validator, UserRepository $userRepository, GroupRepository $groupRepository, ChangesetValidator $changesetValidator)
+    public function __construct(EntityManagerInterface $em, ValidatorInterface $validator, ChangesetValidator $changesetValidator)
     {
         $this->em = $em;
         $this->validator = $validator;
-        $this->userRepository = $userRepository;
-        $this->groupRepository = $groupRepository;
         $this->changesetValidator = $changesetValidator;
     }
 
@@ -35,14 +30,14 @@ class UpdateUser
         $this->em->transactional(function () use ($id, $changeset) {
             $this->changesetValidator->assertChangesetValid($changeset, User::class);
 
-            $user = $this->userRepository->findOrThrow($id);
+            $user = $this->em->getRepository(User::class)->findOrThrow($id);
 
             $user->firstName = $changeset['firstName'];
             $user->lastName = $changeset['lastName'];
             $user->email = $changeset['email'];
             $user->isActive = $changeset['isActive'];
 
-            $group = $this->groupRepository->findOrThrow($changeset['group']);
+            $group = $this->em->getRepository(Group::class)->findOrThrow($changeset['group']);
             $user->group = $group;
 
             $violations = $this->validator->validate($user);
@@ -50,7 +45,7 @@ class UpdateUser
                 throw new ValidationException($violations);
             }
 
-            $this->userRepository->save($user);
+            $this->em->flush();
         });
     }
 }
