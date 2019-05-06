@@ -61,3 +61,8 @@ Feature: groups and users management
     Given there is a user and another group
     When I move user to another group
     Then user was moved to another group
+
+  Scenario: Error on over limit users in group
+    Given there is a group with reached user limit
+    When I add another one user to the group
+    Then request is invalid

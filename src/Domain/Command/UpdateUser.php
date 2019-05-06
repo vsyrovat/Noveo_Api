@@ -44,11 +44,12 @@ class UpdateUser
             $user->isActive = $changeset['isActive'];
 
             $oldGroup = $user->group;
-            $group = $this->em->getRepository(Group::class)->findOrThrow($changeset['group']);
-            $user->group = $group;
+            $oldGroup->removeUser($user);
+            $newGroup = $this->em->getRepository(Group::class)->findOrThrow($changeset['group']);
+            $newGroup->addUser($user);
 
             $this->userValidator->assertUserValid($user);
-            $this->groupValidator->assertGroupValid($group);
+            $this->groupValidator->assertGroupValid($newGroup);
             $this->groupValidator->assertGroupValid($oldGroup);
 
             $this->em->flush();

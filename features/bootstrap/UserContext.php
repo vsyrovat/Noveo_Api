@@ -1,4 +1,5 @@
-<?php declare(strict_types=1);
+<?php /** @noinspection ALL */
+declare(strict_types=1);
 
 use App\Domain\Entity\Group;
 use App\Domain\Entity\User;
@@ -74,6 +75,18 @@ class UserContext implements Context
         $this->em->flush();
         $this->store['group2'] = $group2;
     }
+
+    /** @Given there is a group with reached user limit */
+    public function givenThereIsAGroupWithReachedUserLimit()
+    {
+        $this->givenThereIsAUser();
+
+        $user2 = new User('Kate', 'Smith', 'kate.smith@company.com', true, $this->store['group1']);
+        $this->em->persist($user2);
+        $this->em->flush();
+        $this->store['user2'] = $user2;
+    }
+
 
     /** @When I get a list of all users */
     public function whenIGetAListOfAllUsers()
@@ -167,6 +180,28 @@ JSON;
         $body = FeatureContext::substituteParameter($body, '{group1.id}', $this->store['group1']->getId());
         $this->restContext->iSendARequestTo('PUT', sprintf('/users/%d/', $this->store['user1']->getId()), $body);
     }
+
+    /** @When I add another one user to the group */
+    public function whenIAddAnotherOneUserToTheGroup()
+    {
+        $this->beforeScenarioUsers = $this->em->getRepository(User::class)->findAll();
+
+        $this->restContext->iAddHeaderEqualTo('Content-Type', 'application/json');
+        $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
+        $body = /** @lang JSON */ <<<'JSON'
+{
+  "firstName": "Elton",
+  "lastName": "John",
+  "email": "elton@john.music",
+  "isActive": true,
+  "group": {group1.id}
+}
+JSON;
+        $body = new PyStringNode([$body], 0);
+        $body = FeatureContext::substituteParameter($body, '{group1.id}', $this->store['group1']->getId());
+        $this->restContext->iSendARequestTo('POST', '/users/', $body);
+    }
+
 
     /** @When I move user to another group */
     public function whenIMoveUserToAnotherGroup()

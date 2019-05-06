@@ -3,6 +3,7 @@
 namespace App\Domain\Entity;
 
 use App\Framework\Changeset\Annotations\Api;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -12,6 +13,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 class Group
 {
+    public const MAX_USERS_PER_GROUP = 2;
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
@@ -28,9 +31,16 @@ class Group
      */
     private $name;
 
+    /**
+     * @var User[]
+     * @ORM\OneToMany(targetEntity="App\Domain\Entity\User", mappedBy="group")
+     */
+    public $users;
+
     public function __construct(string $name)
     {
         $this->name = $name;
+        $this->users = new ArrayCollection();
     }
 
     public function getId(): int
@@ -47,5 +57,23 @@ class Group
     {
         $this->name = $name;
         return $this;
+    }
+
+    public function addUser(User $user)
+    {
+        if (!$this->users->contains($user)) {
+            $this->users->add($user);
+            $user->group = $this;
+        }
+    }
+
+    public function removeUser(User $user)
+    {
+        if ($this->users->contains($user)) {
+            $this->users->removeElement($user);
+            if ($user->group === $this) {
+                $user->group = null;
+            }
+        }
     }
 }

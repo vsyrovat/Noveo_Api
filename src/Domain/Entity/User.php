@@ -20,7 +20,8 @@ class User
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Group")
+     * @var Group
+     * @ORM\ManyToOne(targetEntity="Group", inversedBy="users")
      * @ORM\JoinColumn(name="group_id", referencedColumnName="id", nullable=false)
      * @Api()
      */
@@ -73,7 +74,7 @@ class User
         $this->lastName = $lastName;
         $this->email = $email;
         $this->isActive = $isActive;
-        $this->group = $group;
+        $group->addUser($this);
 
         $this->createdAt = new \DateTimeImmutable();
     }

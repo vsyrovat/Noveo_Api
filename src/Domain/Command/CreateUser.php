@@ -6,6 +6,7 @@ use App\Domain\Entity\Group;
 use App\Domain\Entity\User;
 use App\Domain\Exception\DuplicateUserEmail;
 use App\Domain\Exception\GroupNotFound;
+use App\Domain\Validation\GroupValidator;
 use App\Domain\Validation\UserValidator;
 use App\Framework\Changeset\ChangesetValidator;
 use Doctrine\ORM\EntityManagerInterface;
@@ -15,12 +16,14 @@ class CreateUser
     private $em;
     private $changesetValidator;
     private $userValidator;
+    private $groupValidator;
 
-    public function __construct(EntityManagerInterface $em, ChangesetValidator $changesetValidator, UserValidator $userValidator)
+    public function __construct(EntityManagerInterface $em, ChangesetValidator $changesetValidator, UserValidator $userValidator, GroupValidator $groupValidator)
     {
         $this->em = $em;
         $this->changesetValidator = $changesetValidator;
         $this->userValidator = $userValidator;
+        $this->groupValidator = $groupValidator;
     }
 
     /**
@@ -40,6 +43,7 @@ class CreateUser
                 $group
             );
             $this->userValidator->assertUserValid($user);
+            $this->groupValidator->assertGroupValid($group);
             $this->em->persist($user);
             $this->em->flush();
             return $user;

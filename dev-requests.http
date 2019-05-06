@@ -2,7 +2,7 @@ POST http://localhost:8000/groups/
 Content-Type: application/json
 
 {
-  "name": "Helicopter pildots"
+  "name": "Helicopter pilots"
 }
 
 ###
@@ -11,7 +11,7 @@ PUT http://localhost:8000/groups/2/
 Content-Type: application/json
 
 {
-  "name": "Helicopter pildots"
+  "name": "Helicopter pilots"
 }
 
 ###
@@ -20,15 +20,44 @@ GET http://localhost:8000/groups/
 
 ###
 
+# User 1
 POST http://localhost:8000/users/
 Content-Type: application/json
 
 {
-  "firstName": "Elon",
-  "lastName": "Musk",
-  "email": "ElonMuskOffice@TeslaMotors.com",
+  "firstName": "John",
+  "lastName": "Smith",
+  "email": "john.smith@company.com",
   "isActive": true,
-  "groupId": 1
+  "group": 1
+}
+
+###
+
+# User 2
+POST http://localhost:8000/users/
+Content-Type: application/json
+
+{
+  "firstName": "Kate",
+  "lastName": "Smith",
+  "email": "kate.smith@company.com",
+  "isActive": true,
+  "group": 1
+}
+
+###
+
+# User 3
+PUT http://localhost:8000/users/7/
+Content-Type: application/json
+
+{
+  "firstName": "Elton",
+  "lastName": "John",
+  "email": "elton.john@gmail.com",
+  "isActive": true,
+  "group": 1
 }
 
 ###

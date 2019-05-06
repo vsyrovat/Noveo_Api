@@ -35,6 +35,20 @@ class GroupValidator
         }
     }
 
+    private function assertUserLimitNotOver(Group $group)
+    {
+        if ($group->users->count() > Group::MAX_USERS_PER_GROUP) {
+            throw new ValidationException([
+                'message' => sprintf(
+                    'Exceeded user limit %d in group %d (%s)',
+                    Group::MAX_USERS_PER_GROUP,
+                    $group->getId(),
+                    $group->getName()
+                )
+            ]);
+        }
+    }
+
     /**
      * @throws ValidationException
      */
@@ -42,5 +56,6 @@ class GroupValidator
     {
         $this->assertValidBySymfonyAnnotations($group);
         $this->assertNameIsUnique($group);
+        $this->assertUserLimitNotOver($group);
     }
 }
