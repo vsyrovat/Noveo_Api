@@ -9,6 +9,7 @@
 1. Прочитайте `docker-compose.yml`, если ваш id пользователя/группы отличается от 1000 - отредактируйте. В линуксах проверяется командой `id`.
 1. Запустите `./start-infra.sh` - поднимется постгрес-база.
 1. У вас же есть в системе php 7.1 или 7.2?
+1. Выполните `composer install`
 1. Выполните `bin/console doctrine:migrations:migrate`
 1. Выполните `bin/console server:run`
 1. Откройте в браузере http://localhost:8000/api/doc
