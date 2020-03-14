@@ -3,7 +3,6 @@ version: "3.7"
 services:
   db:
     image: postgres:11.2-alpine
-    container_name: php-napi-db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -15,4 +14,4 @@ services:
     ports:
       - 55437:5432
     restart: 'no'
-    user: 1000:1000
+    user: "${UID}:${GID}"
