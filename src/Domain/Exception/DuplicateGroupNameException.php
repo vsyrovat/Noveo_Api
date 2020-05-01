@@ -7,6 +7,6 @@ class DuplicateGroupNameException extends ValidationException
     public function __construct(string $groupName)
     {
         $message = "Group '$groupName' already exists";
-        parent::__construct($message);
+        parent::__construct(['name' => $message]);
     }
 }

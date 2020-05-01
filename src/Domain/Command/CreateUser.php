@@ -18,8 +18,11 @@ class CreateUser
     private $userValidator;
     private $groupValidator;
 
-    public function __construct(EntityManagerInterface $em, ChangesetValidator $changesetValidator, UserValidator $userValidator, GroupValidator $groupValidator)
-    {
+    public function __construct(EntityManagerInterface $em,
+                                ChangesetValidator $changesetValidator,
+                                UserValidator $userValidator,
+                                GroupValidator $groupValidator
+    ) {
         $this->em = $em;
         $this->changesetValidator = $changesetValidator;
         $this->userValidator = $userValidator;
