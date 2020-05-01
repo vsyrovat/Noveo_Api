@@ -146,7 +146,7 @@ class GroupController extends AbstractFOSRestController
             $this->updateGroupCommand->execute($id, $name);
             return View::create(['success' => true], Response::HTTP_OK);
         } catch (GroupNotFound $e) {
-            return View::create(['success' => false, 'msg' => $e->getMessage()], Response::HTTP_NOT_FOUND);
+            return View::create(['success' => false, 'error' => $e->getMessage()], Response::HTTP_NOT_FOUND);
         } catch (ValidationException $e) {
             return View::create(['success' => false, 'violations' => $e->violations], Response::HTTP_BAD_REQUEST);
         }

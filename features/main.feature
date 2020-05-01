@@ -9,10 +9,11 @@ Feature: groups and users management
     Then a group was created
     And I see a group
 
-  Scenario: Throw error on create group with same name
+  Scenario: Error on create group with same name
     Given there is a group
     When I create group with same name
     Then request is invalid
+    And response contains message about group already exists
 
   Scenario: Get list of the groups
     Given there is a groups
@@ -29,6 +30,12 @@ Feature: groups and users management
     When I create a user
     Then the user was created
     And I see the user
+
+  Scenario: Error on create user with same email
+    Given there is a user
+    When I create a user with same email
+    Then request is invalid
+    And response contains message about email already exists
 
   Scenario: Fetch list of users
     Given there is a users in a group

@@ -164,6 +164,23 @@ JSON;
         $this->minkContext->assertResponseStatus(400);
     }
 
+    /** @Then response contains message about group already exists */
+    public function thenResponseContainsMessageAboutGroupAlreadyExists()
+    {
+        $json = /** @lang JSON */
+            <<<'JSON'
+{
+  "success": false,
+  "violations": {
+    "property_path": "name",
+    "message": "Group 'Stargate moderators' already exists"
+  }
+}
+JSON;
+        $json = new PyStringNode([$json], 0);
+        $this->jsonContext->theJsonShouldBeEqualTo($json);
+    }
+
     /** @Then I see a list of groups */
     public function thenISeeAListOfGroups()
     {

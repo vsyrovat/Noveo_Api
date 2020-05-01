@@ -37,6 +37,7 @@ class UserContext implements Context
         $this->restContext = $scope->getEnvironment()->getContext(RestContext::class);
     }
 
+
     /** @Given there is a users in a group */
     public function givenThereIsAUsersInAGroup()
     {
@@ -128,6 +129,25 @@ JSON;
         $this->restContext->iSendARequestTo('POST', '/users/', $body);
     }
 
+    /** @When I create a user with same email */
+    public function whenICreateAUserWithSameEmail()
+    {
+        $this->restContext->iAddHeaderEqualTo('Content-Type', 'application/json');
+        $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
+        $body = /** @lang JSON */ <<< 'JSON'
+{
+    "firstName": "Johnathan",
+    "lastName": "Smitters",
+    "email": "john.smith@company.com",
+    "isActive": true,
+    "group": {group1.id}
+}
+JSON;
+        $body = new PyStringNode([$body], 0);
+        $body = FeatureContext::substituteParameter($body, '{group1.id}', $this->store['group1']->getId());
+        $this->restContext->iSendARequestTo('POST', '/users/', $body);
+    }
+
     /** @When I update user info */
     public function whenIUpdateUserInfo()
     {
@@ -202,7 +222,6 @@ JSON;
         $this->restContext->iSendARequestTo('POST', '/users/', $body);
     }
 
-
     /** @When I move user to another group */
     public function whenIMoveUserToAnotherGroup()
     {
@@ -221,6 +240,7 @@ JSON;
         $body = FeatureContext::substituteParameter($body, '{group2.id}', $this->store['group2']->getId());
         $this->restContext->iSendARequestTo('PUT', sprintf('/users/%d/', $this->store['user1']->getId()), $body);
     }
+
 
     /** @Then I see a list of all users */
     public function iSeeAListOfAllUsers()
@@ -387,42 +407,52 @@ JSON;
         Assert::assertTrue($user->isActive);
     }
 
+    /** @Then response contains message about email already exists */
+    public function thenResponseContainsMessageAboutEmailAlreadyExists()
+    {
+        $this->restContext->theHeaderShouldBeEqualTo('Content-Type', 'application/json');
+        $this->jsonContext->theResponseShouldBeInJson();
+
+        $json = /** @lang JSON */
+            <<< 'JSON'
+{
+  "success": false,
+  "error": "User with email john.smith@company.com already exists"
+}
+JSON;
+        $json = new PyStringNode([$json], 0);
+        $this->jsonContext->theJsonShouldBeEqualTo($json);
+    }
+
     /** @Then response contains violation list about missing fields */
     public function thenResponseContainsViolationListAboutMissingFields()
     {
         $this->restContext->theHeaderShouldBeEqualTo('Content-Type', 'application/json');
         $this->jsonContext->theResponseShouldBeInJson();
 
-        $schema = /** @lang JSON */ <<<'JSON'
+        $json = /** @lang JSON */
+            <<<'JSON'
 {
-  "type": "object",
-  "required": ["success", "violations"],
-  "properties": {
-    "success": {"enum": [false]},
-    "violations": {
-      "type": "array",
-      "items": [
-        {
-          "type": "object",
-          "properties": {
-            "propertyPath": {"enum": ["email"]},
-            "message": {"pattern": "^This field should be given$"}
-          }
-        },
-        {
-          "type": "object",
-          "properties": {
-            "propertyPath": {"enum": ["isActive"]},
-            "message": {"pattern": "^This field should be given$"}
-          }
-        }
-      ]
+  "success": false,
+  "violations": [
+    {
+      "property_path": "group",
+      "message": "This field should be given"
+    },
+    {
+      "property_path": "email",
+      "message": "This field should be given"
+    },
+    {
+      "property_path": "isActive",
+      "message": "This field should be given"
     }
-  }
+    
+  ]
 }
 JSON;
-        $schema = new PyStringNode([$schema], 0);
-        $this->jsonContext->theJsonShouldBeValidAccordingToThisSchema($schema);
+        $json = new PyStringNode([$json], 0);
+        $this->jsonContext->theJsonShouldBeEqualTo($json);
     }
 
     /** @Then response contains violation list about null fields */
