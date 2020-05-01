@@ -7,6 +7,6 @@ class DuplicateUserEmail extends ValidationException
     public function __construct(string $email)
     {
         $message = "User with email {$email} already exists";
-        parent::__construct(['email' => $message]);
+        parent::__construct(['property_path' => 'email', 'message' => $message]);
     }
 }
